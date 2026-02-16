@@ -1,0 +1,94 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Mail\WelcomeMail;
+use App\Models\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
+
+class AuthController extends Controller
+{
+    function register(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'mobile' => 'nullable|string|max:20',
+            'password' => 'required|string|min:6|confirmed',
+        ]);
+
+        if($validator->fails()) {
+            return response()->json(['success'=>false,'message' => $validator->errors()], 400);
+        }
+        
+        $data = $validator->validated();
+        $user = User::create($data);
+
+        // Send welcome email
+        $msg = "Welcome to FarmOps! Your account has been created successfully.";
+        Mail::to($user->email)->send(new WelcomeMail($msg, 'Welcome to FarmOps'));
+
+        return response()->json(['success'=>true,'message' => 'User registered successfully'], 200);
+    }
+
+    function login(Request $request) {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        if (! Auth::attempt($request->only('email', 'password'))) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid Creadential',
+            ]);
+        }
+
+        $user = Auth::user();
+        $token = $user->createToken('MyToken')->plainTextToken;
+
+        // Send welcome back email
+        $msg = "Welcome back to FarmOps! You have successfully logged in.";
+        Mail::to($user->email)->send(new WelcomeMail($msg, 'Welcome Back to FarmOps'));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User logged in',
+            'token' => $token,
+            'data' => Auth::user(),
+        ]);
+    }
+
+    function logout(Request $request) {
+        
+        Auth::logout();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'User logged out',
+        ]);
+    }
+
+    function forgotPassword(Request $request) {
+        $request->validate([
+            'email' => 'required|email|exists:users,email',
+        ]);
+
+        $status = Password::sendResetLink(
+            $request->only('email')
+        );
+
+        return $status === Password::RESET_LINK_SENT
+            ? response()->json(['message' => 'Reset link sent'])
+            : response()->json(['message' => __($status)], 400);
+    }
+}
