@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ResetPasswordMail;
 use App\Mail\WelcomeMail;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -12,7 +13,8 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
-    function register(Request $request) {
+    function register(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
@@ -20,10 +22,10 @@ class AuthController extends Controller
             'password' => 'required|string|min:6|confirmed',
         ]);
 
-        if($validator->fails()) {
-            return response()->json(['success'=>false,'message' => $validator->errors()], 400);
+        if ($validator->fails()) {
+            return response()->json(['success' => false, 'message' => $validator->errors()], 400);
         }
-        
+
         $data = $validator->validated();
         $user = User::create($data);
 
@@ -31,10 +33,11 @@ class AuthController extends Controller
         $msg = "Welcome to FarmOps! Your account has been created successfully.";
         Mail::to($user->email)->send(new WelcomeMail($msg, 'Welcome to FarmOps'));
 
-        return response()->json(['success'=>true,'message' => 'User registered successfully'], 200);
+        return response()->json(['success' => true, 'message' => 'User registered successfully'], 200);
     }
 
-    function login(Request $request) {
+    function login(Request $request)
+    {
         $validator = Validator::make($request->all(), [
             'email' => 'required|email',
             'password' => 'required',
@@ -46,7 +49,7 @@ class AuthController extends Controller
             ], 422);
         }
 
-        if (! Auth::attempt($request->only('email', 'password'))) {
+        if (!Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid Creadential',
@@ -68,8 +71,9 @@ class AuthController extends Controller
         ]);
     }
 
-    function logout(Request $request) {
-        
+    function logout(Request $request)
+    {
+
         Auth::logout();
 
         return response()->json([
@@ -78,17 +82,54 @@ class AuthController extends Controller
         ]);
     }
 
-    function forgotPassword(Request $request) {
+    function forgotPassword(Request $request)
+    {
         $request->validate([
             'email' => 'required|email|exists:users,email',
         ]);
 
-        $status = Password::sendResetLink(
-            $request->only('email')
+        $user = User::where('email', $request->email)->first();
+
+        // Generate token
+        $token = Password::createToken($user);
+
+        $frontendUrl = env('FRONTEND_URL');
+
+        $url = $frontendUrl . '/reset-password?token=' . $token .
+            '&email=' . urlencode($user->email);
+
+        // Send SMTP email
+        Mail::to($user->email)->send(new ResetPasswordMail($user, $url));
+
+        return response()->json([
+            'message' => 'Reset link sent to your email'
+        ]);
+
+
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'token' => 'required',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->password = bcrypt($password);
+                $user->save();
+
+                // Revoke Sanctum tokens
+                $user->tokens()->delete();
+            }
         );
 
-        return $status === Password::RESET_LINK_SENT
-            ? response()->json(['message' => 'Reset link sent'])
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['message' => 'Password reset successful'])
             : response()->json(['message' => __($status)], 400);
     }
+
 }

@@ -98,7 +98,10 @@ function Page() {
                             {loading ? 'Logging in...' : 'Login'}
                         </button>
                     </form>
-                    <p className='text-base mt-6 text-gray-600'>
+                    <p className='text-base mt-4 text-gray-600'>
+                        <span className='text-blue-500 hover:text-blue-600 cursor-pointer font-medium transition-colors' onClick={() => router.push('/forgot-password')}>Forgot password?</span>
+                    </p>
+                    <p className='text-base mt-2 text-gray-600'>
                         not have account? <span className='text-blue-500 hover:text-blue-600 cursor-pointer font-medium transition-colors' onClick={() => { setIsLogin(false); setError(''); }}>create one</span>
                     </p>
                 </div>

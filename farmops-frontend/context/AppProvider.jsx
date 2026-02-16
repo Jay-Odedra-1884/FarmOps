@@ -127,8 +127,65 @@ export const AppProvider = ({ children }) => {
         }
     }
 
+    const forgotPassword = async (email) => {
+        try {
+            const res = await fetch(`${API_URL}/forgot-password`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                toast.success(data.message || 'Password reset link sent to your email!');
+            } else {
+                toast.error(getErrorMessage(data.message));
+            }
+            return data;
+        } catch (error) {
+            toast.error("Failed to send reset link");
+            console.error("Forgot password failed:", error);
+            throw error;
+        }
+    }
+
+    const resetPassword = async (token, email, password, passwordConfirmation) => {
+        try {
+            const res = await fetch(`${API_URL}/reset-password`, {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json",
+                },
+                body: JSON.stringify({ 
+                    token,
+                    email,
+                    password,
+                    password_confirmation: passwordConfirmation
+                }),
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                toast.success(data.message || 'Password reset successfully!');
+            } else {
+                toast.error(getErrorMessage(data.message));
+            }
+            return data;
+        } catch (error) {
+            toast.error("Failed to reset password");
+            console.error("Reset password failed:", error);
+            throw error;
+        }
+    }
+
     return (
-        <AppContext.Provider value={{ login, register, logout, authToken }}>
+        <AppContext.Provider value={{ login, register, logout, authToken, forgotPassword, resetPassword }}>
             {children}
         </AppContext.Provider>
     );
