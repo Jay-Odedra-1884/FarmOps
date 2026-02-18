@@ -58,26 +58,6 @@ export default function RichTextEditor({ editorRef }) {
         <div className="border-l border-gray-300"></div>
 
         <button
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={editor.isActive("bulletList") ? activeButtonClass : toolbarButtonClass}
-          title="Bullet List"
-          type="button"
-        >
-          <List size={18} />
-        </button>
-
-        <button
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={editor.isActive("orderedList") ? activeButtonClass : toolbarButtonClass}
-          title="Ordered List"
-          type="button"
-        >
-          <ListOrdered size={18} />
-        </button>
-
-        <div className="border-l border-gray-300"></div>
-
-        <button
           onClick={() => editor.chain().focus().undo().run()}
           className={toolbarButtonClass}
           title="Undo"

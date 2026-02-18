@@ -15,6 +15,22 @@ export const getListings = async (authToken) => {
     }
 }
 
+export const getUserListings = async (authToken) => {
+    try {
+        let data = await fetch(process.env.NEXT_PUBLIC_API_URL + "/user-listings", {
+            method: "GET",
+            credentials: "include",
+            headers: {
+                "authorization": `Bearer ${authToken}`,
+                "Accept": "application/json",
+            }
+        });
+        return await data.json();
+    } catch (error) {
+        console.error("Error fetching user listings:", error);
+    }
+}
+
 export const addListing = async (authToken, listingData) => {
     try {
         const res = await fetch(process.env.NEXT_PUBLIC_API_URL + "/listings", {

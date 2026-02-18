@@ -18,7 +18,7 @@ class ListingController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Listing retrieved successfully',
-            'data' => Listing::all()
+            'data' => Listing::with(['category', 'user'])->get()
         ]);
     }
 
@@ -49,7 +49,7 @@ class ListingController extends Controller
                 'description' => $request->description,
                 'image' => $imagePath,
                 'category_id' => $request->category_id,
-                'user_id' => 4,
+                'user_id' => auth()->user()->id,
             ]);
             return response()->json([
                 'success' => true,
@@ -62,6 +62,16 @@ class ListingController extends Controller
                 'message' => 'Failed to create listing: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function userListings() {
+        $listings = Listing::where('user_id', auth()->user()->id)->with(['category', 'user'])->get();
+        return response()->json([
+            'success' => true,
+            'message' => 'User listings retrieved successfully',
+            'data' => $listings,
+            'id' => auth()->user()->id
+        ]);
     }
 
     /**

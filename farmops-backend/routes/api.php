@@ -21,6 +21,7 @@ Route::resource('categories', CategoryController::class);
 
 //for listing in blog page
 Route::resource('listings', ListingController::class);
+Route::get('user-listings', [ListingController::class, 'userListings']);
 
 });
 
