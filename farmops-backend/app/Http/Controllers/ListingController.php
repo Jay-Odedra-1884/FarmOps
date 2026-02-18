@@ -49,9 +49,7 @@ class ListingController extends Controller
                 'description' => $request->description,
                 'image' => $imagePath,
                 'category_id' => $request->category_id,
-                // 'user_id' => auth()->id(),
-                'user_id' => $request->user_id,
-
+                'user_id' => 4,
             ]);
             return response()->json([
                 'success' => true,
