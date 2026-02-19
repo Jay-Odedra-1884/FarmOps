@@ -81,7 +81,7 @@ class ListingController extends Controller
      */
     public function show(string $id)
     {
-        $data = Listing::find($id)->with(['category', 'user'])->first();
+        $data = Listing::with(['category', 'user'])->find($id);
         if (!$data) {
             return response()->json([
                 'success' => false,
