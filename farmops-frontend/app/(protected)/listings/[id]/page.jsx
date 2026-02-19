@@ -2,6 +2,7 @@
 
 import { Spinner } from '@/components/ui/spinner';
 import { MyHook } from '@/context/AppProvider';
+import { getComments } from '@/services/commentApi';
 import { getListingById } from '@/services/listingApi';
 import { useParams, useRouter } from 'next/navigation';
 
@@ -12,18 +13,31 @@ function page() {
     const { id } = useParams();
     const [listing, setListing] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [comments, setComments] = useState([]);
+    const [commentsPage, setCommentsPage] = useState(1);
+    const [commentsLoading, setCommentsLoading] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
         if (authToken) {
-            // setLoading(true);
-            // getListingById(authToken, id)
-            //     .then((res) => setListing(res.data))
-            //     .catch((err) => console.log(err))
-            //     .finally(() => setLoading(false));
+            setLoading(true);
+            getListingById(authToken, id)
+                .then((res) => setListing(res.data))
+                .catch((err) => console.log(err))
+                .finally(() => setLoading(false));
         }
 
     }, [authToken, id])
+
+    useEffect(() => {
+        if(listing) {
+            setCommentsLoading(true);
+            getComments(authToken, listing.id, commentsPage)
+                .then((res) => setComments(res.data.data))
+                .catch((err) => console.log(err))
+                .finally(() => setCommentsLoading(false));
+        }
+    }, [authToken, listing, commentsPage, id])
 
     return (
         <div>
@@ -46,8 +60,8 @@ function page() {
                                 dangerouslySetInnerHTML={{ __html: listing?.description.replace(/<p><\/p>/g, '<br />') }}
                             ></div>
                         </div>
-                        <div className='w-full px-5'>
-                            <div className='w-full xl:w-1/2 px-2 bg-gray-200 rounded-sm'>
+                        <div className='w-full flex flex-col items-center'>
+                            <div className='w-full xl:w-1/2 px-2 bg-gray-200 rounded-t-sm'>
                                 {/* <p className='font-semibold text-lg mt-4'>Comments</p> */}
                                 <form>
                                     <div className='py-3 mt-2'>
@@ -59,6 +73,27 @@ function page() {
                                         </button>
                                     </div>
                                 </form>
+                            </div>
+                            <div className='w-1/2'>
+                                  <div>
+                                    {commentsLoading ? (
+                                      <div className='flex justify-center items-center'>
+                                        <Spinner className="size-10 text-black" />
+                                      </div>
+                                    ) : (
+                                      <div className='bg-gray-50 px-4 py-3'>
+                                      {
+                                        comments.map((comment) => (
+                                        <div key={comment.id} className='border border-gray-300 py-2 px-5 rounded-b-sm mt-5'>
+                                          <p className='font-semibold'>{comment.user?.name}</p>
+                                          <p>{comment.content}</p>
+                                        </div>
+                                      ))
+                                      }
+                                      <div className=' w-fit text-gray-600 px-2 py-1 rounded-sm mt-5 cursor-pointer' onClick={() => setCommentsPage(prev => prev + 1)}>More comments</div>
+                                      </div>
+                                    )}
+                                  </div> 
                             </div>
                         </div>
                         <div className='min-h-screen'></div>

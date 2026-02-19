@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\MailController;
 use Illuminate\Http\Request;
@@ -22,6 +23,9 @@ Route::resource('categories', CategoryController::class);
 //for listing in blog page
 Route::resource('listings', ListingController::class);
 Route::get('user-listings', [ListingController::class, 'userListings']);
+
+//for comments
+Route::resource('comments', CommentController::class);
 
 //csv file upload
 Route::post('upload-listings-csv', [ListingController::class, 'upload']);
