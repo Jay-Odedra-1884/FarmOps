@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\ImportCsvJob;
 use App\Models\Listing;
 use Exception;
 
@@ -15,10 +16,11 @@ class ListingController extends Controller
      */
     public function index()
     {
+        $listings = Listing::with(['category', 'user'])->paginate(20);
         return response()->json([
             'success' => true,
             'message' => 'Listing retrieved successfully',
-            'data' => Listing::with(['category', 'user'])->get()
+            'data' => $listings
         ]);
     }
 
@@ -65,7 +67,7 @@ class ListingController extends Controller
     }
 
     public function userListings() {
-        $listings = Listing::where('user_id', auth()->user()->id)->with(['category', 'user'])->get();
+        $listings = Listing::where('user_id', auth()->user()->id)->with(['category', 'user'])->paginate(20);
         return response()->json([
             'success' => true,
             'message' => 'User listings retrieved successfully',
@@ -79,7 +81,7 @@ class ListingController extends Controller
      */
     public function show(string $id)
     {
-        $data = Listing::find($id);
+        $data = Listing::find($id)->with(['category', 'user'])->first();
         if (!$data) {
             return response()->json([
                 'success' => false,
@@ -124,22 +126,21 @@ class ListingController extends Controller
             }
 
             if ($request->hasFile('image')) {
-                // Store new image
+                // Store new image on the public disk
                 $imagePath = $request->file('image')->store('images', 'public');
 
-                // Delete old image from storage
-                if ($listing->image && Storage::exists('public/' . $listing->image)) {
-                    Storage::delete('public/' . $listing->image);
+                // Delete old image from the public disk
+                if ($listing->image && Storage::disk('public')->exists($listing->image)) {
+                    Storage::disk('public')->delete($listing->image);
                 }
             }
 
             $listing->update([
-                'title' => $request->title,
-                'description' => $request->description,
-                'image' => $imagePath,
-                'category_id' => $request->category_id,
-                // 'user_id' => auth()->id(),
-                'user_id' => $request->user_id,
+                'title' => $request->title ?? $listing->title,
+                'description' => $request->description ?? $listing->description,
+                'image' => $imagePath ?? $listing->image,
+                'category_id' => $request->category_id ?? $listing->category_id,
+                'user_id' => auth()->user()->id,
             ]);
 
 
@@ -172,9 +173,9 @@ class ListingController extends Controller
                 ], 404);
             }
 
-            // Delete image from storage
-            if ($listing->image && Storage::exists('public/' . $listing->image)) {
-                Storage::delete('public/' . $listing->image);
+            // Delete image from the public disk
+            if ($listing->image && Storage::disk('public')->exists($listing->image)) {
+                Storage::disk('public')->delete($listing->image);
             }
 
             $listing->delete();
@@ -189,5 +190,25 @@ class ListingController extends Controller
                 'message' => 'Failed to delete listing: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+
+    //function to upload the listing using the csv file 
+    public function upload(Request $request) {
+        $request->validate([
+            'file'  => 'required|file|mimes:csv,txt'
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->store('uploads', 'public');
+        $absolutePath = storage_path('app/public/' . $path);
+
+        //Dishpatch the job to the queue
+        ImportCsvJob::dispatch($absolutePath, auth()->user()->id);
+
+        return response()->json([
+                'success' => true,
+                'message' => 'Listings uploaded successfully',
+            ]);
     }
 }

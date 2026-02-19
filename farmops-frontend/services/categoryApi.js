@@ -1,3 +1,5 @@
+import toast from 'react-hot-toast';
+
 export const getCategory = async (authToken) => {
     
     try {
@@ -10,10 +12,15 @@ export const getCategory = async (authToken) => {
              }
         });
         
-        return await res.json();
+        const data = await res.json();
+        if (!res.ok) {
+            toast.error(data.message || "Failed to fetch categories");
+        }
+        return data;
 
     } catch (error) {
         console.error("Error fetching categories:", error);
+        toast.error("Failed to fetch categories");
         return [];
     }
 }

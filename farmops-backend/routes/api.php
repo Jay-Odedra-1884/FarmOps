@@ -23,6 +23,9 @@ Route::resource('categories', CategoryController::class);
 Route::resource('listings', ListingController::class);
 Route::get('user-listings', [ListingController::class, 'userListings']);
 
+//csv file upload
+Route::post('upload-listings-csv', [ListingController::class, 'upload']);
+
 });
 
 //to send mail
