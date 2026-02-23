@@ -6,6 +6,7 @@ use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\MailController;
+use App\Http\Controllers\ExpensesCategoryController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -33,6 +34,11 @@ Route::group([
 
     //likes
     Route::post('likes', [LikeController::class, 'toggle']);
+
+    //expenses
+
+    //expenses category
+    Route::resource('expenses-categories', ExpensesCategoryController::class);
 
 });
 

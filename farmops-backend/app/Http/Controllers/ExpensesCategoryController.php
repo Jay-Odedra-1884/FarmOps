@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\ExpensesCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+
 
 class ExpensesCategoryController extends Controller
 {
@@ -12,7 +14,11 @@ class ExpensesCategoryController extends Controller
      */
     public function index()
     {
-        return ExpensesCategory::all();
+        return response()->json([
+            'success' => true,
+            'message' => 'Expenses Categories Fetched Successfully',
+            'data' => ExpensesCategory::all()
+        ]);
     }
 
     /**
@@ -68,9 +74,28 @@ class ExpensesCategoryController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, ExpensesCategory $expensesCategory)
+    public function update(Request $request, $id)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+        ]);
+
+        if($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation Error',
+                'errors' => $validator->errors()
+            ]);
+        }
+
+        $expensesCategory = ExpensesCategory::find($id);
+        $expensesCategory->update($request->all());
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Expenses Category Updated Successfully',
+            'data' => $expensesCategory
+        ]);
     }
 
     /**
@@ -78,6 +103,12 @@ class ExpensesCategoryController extends Controller
      */
     public function destroy(ExpensesCategory $expensesCategory)
     {
-        //
+        $expensesCategory->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Expenses Category Deleted Successfully',
+            'data' => $expensesCategory
+        ]);
     }
 }
