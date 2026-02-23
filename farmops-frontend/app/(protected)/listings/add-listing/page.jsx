@@ -65,7 +65,7 @@ function page() {
       <div className="max-w-2xl mx-auto bg-gray-50 rounded-lg shadow-md p-8">
         <div className='flex justify-between items-center'>
           <h1 className="text-3xl font-bold text-gray-900 mb-6">Add New Listing</h1>
-          <div onClick={() => router.push('upload-listing-csv')} className='bg-black text-white px-2 py-1 rounded-sm'>Import From CSV</div>
+          <div onClick={() => router.push('upload-listing-csv')} className='bg-black text-white px-2 py-1 rounded-sm cursor-pointer'>Import From CSV</div>
         </div>
 
         <form encType='multipart/form-data' onSubmit={handleSubmit} className="space-y-6">

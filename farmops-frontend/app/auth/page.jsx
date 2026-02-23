@@ -19,7 +19,7 @@ function Page() {
 
     useEffect(() => {
         if (authToken) {
-            router.push('/dashboard');
+            router.push('/listings');
         } else {
             router.push('/auth');
         }
@@ -73,7 +73,7 @@ function Page() {
 
                     <form onSubmit={handleLoginSubmit} className='w-full flex flex-col gap-5 items-center'>
                         <input
-                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder-gray-400 text-gray-800'
+                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Email'
                             type="email"
                             name='email'
@@ -82,7 +82,7 @@ function Page() {
                             required
                         />
                         <input
-                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder-gray-400 text-gray-800'
+                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Password'
                             type="password"
                             name='password'
@@ -93,7 +93,7 @@ function Page() {
                         <button 
                             type="submit"
                             disabled={loading}
-                            className='w-full bg-blue-500 hover:bg-blue-600 rounded-xl text-white text-lg font-medium cursor-pointer py-4 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
+                            className='w-full bg-black hover:bg-black/80 rounded-xl text-white text-lg font-medium cursor-pointer py-4 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
                         >
                             {loading ? 'Logging in...' : 'Login'}
                         </button>
@@ -117,7 +117,7 @@ function Page() {
 
                     <form onSubmit={handleRegisterSubmit} className='w-full flex flex-col gap-5 items-center'>
                         <input
-                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder-gray-400 text-gray-800'
+                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Name'
                             type="text"
                             name='name'
@@ -126,7 +126,7 @@ function Page() {
                             required
                         />
                         <input
-                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder-gray-400 text-gray-800'
+                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Email'
                             type="email"
                             name='email'
@@ -135,7 +135,7 @@ function Page() {
                             required
                         />
                         <input
-                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder-gray-400 text-gray-800'
+                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Mobile'
                             type="tel"
                             name='mobile'
@@ -143,7 +143,7 @@ function Page() {
                             onChange={(e) => setMobile(e.target.value)}
                         />
                         <input
-                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder-gray-400 text-gray-800'
+                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Password'
                             type="password"
                             name='password'
@@ -152,7 +152,7 @@ function Page() {
                             required
                         />
                         <input
-                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all placeholder-gray-400 text-gray-800'
+                            className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Confirm Password'
                             type="password"
                             name='confirmPassword'
@@ -163,7 +163,7 @@ function Page() {
                         <button 
                             type="submit"
                             disabled={loading}
-                            className='w-full bg-blue-500 hover:bg-blue-600 rounded-xl text-white text-lg font-medium cursor-pointer py-4 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
+                            className='w-full bg-black hover:bg-black/80 rounded-xl text-white text-lg font-medium cursor-pointer py-4 transition-all duration-200 shadow-md hover:shadow-lg active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed'
                         >
                             {loading ? 'Creating account...' : 'Sign Up'}
                         </button>

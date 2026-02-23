@@ -40,7 +40,7 @@ export const AppProvider = ({ children }) => {
         if (token) {
             setAuthToken(token);
         } else {
-            router.push('/auth');
+            // router.push('/auth');
         }
     })
 

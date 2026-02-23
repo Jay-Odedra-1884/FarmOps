@@ -7,9 +7,9 @@ use App\Mail\WelcomeMail;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
+use App\Jobs\SendWelcomeMailJob;
 
 class AuthController extends Controller
 {
@@ -31,10 +31,12 @@ class AuthController extends Controller
 
         // Send welcome email
         $msg = "Welcome to FarmOps! Your account has been created successfully.";
-        Mail::to($user->email)->send(new WelcomeMail($msg, 'Welcome to FarmOps'));
+        SendWelcomeMailJob::dispatch($msg, $user);
 
         return response()->json(['success' => true, 'message' => 'User registered successfully'], 200);
     }
+
+
 
     function login(Request $request)
     {
@@ -61,7 +63,9 @@ class AuthController extends Controller
 
         // Send welcome back email
         $msg = "Welcome back to FarmOps! You have successfully logged in.";
-        Mail::to($user->email)->send(new WelcomeMail($msg, 'Welcome Back to FarmOps'));
+        // Mail::to($user->email)->send(new WelcomeMail($msg, 'Welcome Back to FarmOps'));
+        SendWelcomeMailJob::dispatch($msg, $user);
+
 
         return response()->json([
             'success' => true,
