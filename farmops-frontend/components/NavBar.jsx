@@ -14,7 +14,7 @@ function NavBar() {
     }
 
   return (
-    <div className='bg-transparent text-black px-5 w-full flex justify-between items-center'>
+    <div className='bg-transparent text-black xl:px-5 w-full flex justify-between items-center scale-80 md:scale-100'>
       <div className='text-3xl py-4'>FarmOps</div>
       <div className='flex gap-5 items-center font-bold bg-black text-white px-4 py-2 rounded-lg'>
         <div onClick={() => router.push('/')} className='cursor-pointer hover:scale-110'>Home</div>

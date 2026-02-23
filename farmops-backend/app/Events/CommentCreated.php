@@ -32,8 +32,7 @@ class CommentCreated implements ShouldBroadcastNow
      */
     public function broadcastOn(): array
     {
-       return [new Channel('listing.' . $this->comment->listing_id)];
-        
+       return [new Channel('listing.' . $this->comment->listing_id)]; 
     }
 
     public function broadcastAs(): string

@@ -81,13 +81,15 @@ class ListingController extends Controller
      */
     public function show(string $id)
     {
-        $data = Listing::with(['category', 'user'])->find($id);
+        $data = Listing::with(['category', 'user'])->withCount('likes')->find($id);
         if (!$data) {
             return response()->json([
                 'success' => false,
                 'message' => 'Listing not found',
             ], 404);
         }
+
+        $data['liked'] = $data->likes()->where('user_id', auth()->user()->id)->exists();
 
         return response()->json([
             'success' => true,
