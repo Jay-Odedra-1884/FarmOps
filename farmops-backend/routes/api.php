@@ -15,20 +15,20 @@ Route::post('logout', [AuthController::class, 'logout']);
 
 
 Route::group([
-    "middleware"=>"auth:sanctum"
-], function() {
-//for category in blog page
-Route::resource('categories', CategoryController::class);
+    "middleware" => "auth:sanctum"
+], function () {
+    //for category in blog page
+    Route::resource('categories', CategoryController::class);
 
-//for listing in blog page
-Route::resource('listings', ListingController::class);
-Route::get('user-listings', [ListingController::class, 'userListings']);
+    //for listing in blog page
+    Route::resource('listings', ListingController::class);
+    Route::get('user-listings', [ListingController::class, 'userListings']);
 
-//for comments
-Route::resource('comments', CommentController::class);
+    //for comments
+    Route::resource('comments', CommentController::class);
 
-//csv file upload
-Route::post('upload-listings-csv', [ListingController::class, 'upload']);
+    //csv file upload
+    Route::post('upload-listings-csv', [ListingController::class, 'upload']);
 
 });
 

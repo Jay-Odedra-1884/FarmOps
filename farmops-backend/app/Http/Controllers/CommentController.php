@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\CommentCreated;
 use App\Models\Comment;
 use Illuminate\Http\Request;
 
@@ -42,6 +43,9 @@ class CommentController extends Controller
             'user_id' => auth()->user()->id,
             'content' => $request->get('content')
         ]);
+
+        $comment->load('user');
+        broadcast(new CommentCreated($comment));
 
         return response()->json([
             'success' => true,
