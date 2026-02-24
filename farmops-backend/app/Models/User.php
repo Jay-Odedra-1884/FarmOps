@@ -10,6 +10,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\Like;
 use App\Models\Comment;
+use App\Models\Farm;
 
 
 class User extends Authenticatable
@@ -58,5 +59,9 @@ class User extends Authenticatable
 
     public function comments() {
         return $this->hasMany(Comment::class);
+    }
+
+    public function farms() {
+        return $this->hasMany(Farm::class);
     }
 }

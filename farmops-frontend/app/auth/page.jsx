@@ -19,7 +19,7 @@ function Page() {
 
     useEffect(() => {
         if (authToken) {
-            router.push('/listings');
+            router.push('/dashboard');
         } else {
             router.push('/auth');
         }

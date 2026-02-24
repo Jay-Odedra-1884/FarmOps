@@ -7,6 +7,7 @@ use App\Http\Controllers\ListingController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\ExpensesCategoryController;
+use App\Http\Controllers\FarmController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -39,6 +40,8 @@ Route::group([
 
     //expenses category
     Route::resource('expenses-categories', ExpensesCategoryController::class);
+    //farm
+    Route::resource('farms', FarmController::class);
 
 });
 

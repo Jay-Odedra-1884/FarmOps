@@ -37,7 +37,6 @@ function page() {
         .catch((err) => console.log(err))
         .finally(() => setLoading(false));
     } else {
-      router.push('/auth');
       setLoading(false);
     }
   }, [authToken, currentPage]);

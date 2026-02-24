@@ -22,6 +22,7 @@ function NavBar() {
           <>
             <div onClick={() => router.push('/listings')} className='cursor-pointer hover:scale-110'>Read</div>
             <div onClick={() => router.push('/my-space')} className='cursor-pointer hover:scale-110'>My Space</div>
+            <div onClick={() => router.push('/dashboard')} className='cursor-pointer text-green-500 hover:scale-110'>Dashboard</div>
           </>
         )}
         {authToken ? (
