@@ -10,6 +10,18 @@ export const getFarms = async (authToken) => {
     return await res.json()
 }
 
+export const getFarmById = async (authToken, farmId) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farms/${farmId}`, {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${authToken}`
+        }
+    })
+    
+    return await res.json()
+}
+
 
 export const addFarm = async (authToken, farmData) => {
     console.log(farmData.get('farmName'));
@@ -29,8 +41,8 @@ export const addFarm = async (authToken, farmData) => {
     return await res.json()
 } 
 
-export const updateFarm = async (authToken, farmData) => {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farms`, {
+export const updateFarm = async (authToken, farmId, farmData) => {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/farms/${farmId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

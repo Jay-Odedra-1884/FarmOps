@@ -5,14 +5,17 @@ import { useEffect } from "react";
 
 export default function Layout({ children }) {
 
-    const { authToken } = MyHook();
+    const { authToken, authLoading } = MyHook();
     const router = useRouter();
 
     useEffect(() => {
-        if(!authToken) {
+        if (!authLoading && !authToken) {
             router.push('/auth');
         }
-    }, [authToken]);
+    }, [authToken, authLoading]);
+
+    // Don't render anything while checking the cookie
+    if (authLoading) return null;
 
     return (
         <>

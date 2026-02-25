@@ -20,6 +20,18 @@ function FarmsList() {
         if (!data.get('farmName')) {
             newErrors.farmName = "Farm name is required";
         }
+        if (data.get('farmName').length > 30) {
+            newErrors.farmName = "Farm name cannot be more than 30 characters";
+        }
+        if (data.get('farmLocation').length > 20) {
+            newErrors.farmLocation = "Farm location cannot be more than 20 characters";
+        }
+        if (data.get('farmSize') < 0) {
+            newErrors.farmSize = "Farm size cannot be negative";
+        }
+        if (data.get('farmSize') > 1000000) {
+            newErrors.farmSize = "Farm size cannot be more than 1000000";
+        }
         setError(newErrors);
         return Object.keys(newErrors).length === 0;
     }
@@ -54,8 +66,8 @@ function FarmsList() {
     }, [authToken])
 
     return (
-        <div className="w-full h-full bg-white shadow rounded-2xl p-5">
-            <div className="flex justify-between items-center relative">
+        <div className="w-full h-full min-h-0 bg-white shadow rounded-2xl p-5 flex flex-col">
+            <div className="flex justify-between items-center relative shrink-0">
 
                 <h2 className="text-xl font-semibold">Farms</h2>
 
@@ -95,6 +107,7 @@ function FarmsList() {
                                         placeholder="Farm location"
                                         className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-green-500 focus:outline-none"
                                     />
+                                    {errors.farmLocation && <p className="text-red-500 text-sm">{errors.farmLocation}</p>}
                                 </div>
 
                                 <div>
@@ -107,6 +120,7 @@ function FarmsList() {
                                         placeholder="Farm Size"
                                         className="w-full border border-gray-300 rounded-lg px-3 py-2 mt-1 focus:ring-2 focus:ring-green-500 focus:outline-none"
                                     />
+                                    {errors.farmSize && <p className="text-red-500 text-sm">{errors.farmSize}</p>}
                                 </div>
 
                                 <button
@@ -122,9 +136,9 @@ function FarmsList() {
                 </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-4 flex-1 overflow-y-auto pr-1">
                 {loading ? (
-                    <div className='w-full flex justify-center'>
+                    <div className='w-full flex justify-center mt-4'>
                         <Spinner className='size-10' />
                     </div>
                 ) : (
@@ -133,7 +147,7 @@ function FarmsList() {
                     ) : (
                         <div className="w-full flex flex-col gap-2">
                             {farms.map((farm) => (
-                                <Link key={farm.id} href={`/dashboard/farm/${farm.id}`} className="w-full bg-gray-100 rounded-lg p-4 flex justify-between">
+                                <Link key={farm.id} href={`/dashboard/farm/${farm.id}`} className="w-full bg-gray-100 shadow rounded-lg p-4 flex justify-between transition-all duration-200 hover:bg-gray-200">
                                     <h3 className="text-lg font-semibold">{farm.name}</h3>
                                     <div className='text-center'>
                                         {farm.location && <p className='flex gap-1 items-center'><MapPinIcon className='size-4'/>{farm.location}</p>}

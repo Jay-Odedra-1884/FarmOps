@@ -64,4 +64,8 @@ class User extends Authenticatable
     public function farms() {
         return $this->hasMany(Farm::class);
     }
+
+    public function expense() {
+        return $this->hasMany(Expense::class);
+    }
 }

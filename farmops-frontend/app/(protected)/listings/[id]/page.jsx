@@ -30,6 +30,7 @@ function page() {
                     setListing(res.data);
                     setLikes(res.data.likes_count ?? 0);
                     setLiked(res.data.liked ?? false);
+                    
                 })
                 .catch((err) => console.log(err))
                 .finally(() => setLoading(false));
@@ -113,6 +114,7 @@ function page() {
                     <div className='bg-black px-2 py-1 rounded-sm text-white w-fit m-5 cursor-pointer hover:scale-105 transition-all duration-100 hover:shadow-lg' onClick={() => router.push('/listings')}>Back to Read</div>
                     <div className='w-full flex flex-col items-center mt-10'>
                         <h1 className='text-3xl font-bold p-5 md:p-0'>{listing?.title}</h1>
+                            <p className='mt-2 text-gray-300'>Written by <span className='text-black font-bold'> {listing?.user?.name}</span></p>
                         {listing?.image && (
                             <div className='w-full p-5 xl:w-1/2 xl:p-0'>
                                 <img src={'http://127.0.0.1:8000/storage/' + listing.image} alt="Listing cover" className="size-full object-cover rounded-md my-4" />

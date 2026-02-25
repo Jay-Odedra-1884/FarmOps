@@ -3,6 +3,8 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\CropController;
+use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\LikeController;
 use App\Http\Controllers\MailController;
@@ -42,6 +44,11 @@ Route::group([
     Route::resource('expenses-categories', ExpensesCategoryController::class);
     //farm
     Route::resource('farms', FarmController::class);
+    //crop
+    Route::resource('crops', CropController::class);
+    //expenses
+    Route::resource('expenses', ExpenseController::class);
+    Route::get('all-expenses', [ExpenseController::class, 'getAllExpenses']);
 
 });
 

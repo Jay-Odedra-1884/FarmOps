@@ -22,21 +22,13 @@ class FarmController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'location' => 'nullable|string|max:255',
+            'name' => 'required|string|max:30',
+            'location' => 'nullable|string|max:20',
             'size' => 'nullable|numeric',
         ]);
 
@@ -83,14 +75,6 @@ class FarmController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Farm $farm)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, $id)
@@ -103,8 +87,8 @@ class FarmController extends Controller
             ]);
         }
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'location' => 'string|max:255',
+            'name' => 'required|string|max:30',
+            'location' => 'string|max:20',
             'size' => 'numeric',
         ]);
 

@@ -34,15 +34,15 @@ export const AppProvider = ({ children }) => {
     const router = useRouter();
 
     const [authToken, setAuthToken] = useState(null);
+    const [authLoading, setAuthLoading] = useState(true);
 
     useEffect(() => {
         let token = Cookies.get('authToken');
         if (token) {
             setAuthToken(token);
-        } else {
-            // router.push('/auth');
         }
-    })
+        setAuthLoading(false);
+    }, [])
 
     const login = async (email, password) => {
         try {
@@ -162,7 +162,7 @@ export const AppProvider = ({ children }) => {
                     "Content-Type": "application/json",
                     "Accept": "application/json",
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     token,
                     email,
                     password,
@@ -185,7 +185,7 @@ export const AppProvider = ({ children }) => {
     }
 
     return (
-        <AppContext.Provider value={{ login, register, logout, authToken, forgotPassword, resetPassword }}>
+        <AppContext.Provider value={{ login, register, logout, authToken, authLoading, forgotPassword, resetPassword }}>
             {children}
         </AppContext.Provider>
     );
