@@ -19,31 +19,35 @@ class ExpenseController extends Controller
         ]);
         $query = Expense::query();
 
-        if ($request->has('farm_id')) {
+        if ($request->filled('farm_id')) {
             $query->where('farm_id', $request->farm_id);
         }
 
-        if ($request->has('crop_id')) {
+        if ($request->filled('crop_id')) {
             $query->where('crop_id', $request->crop_id);
         }
 
-        if ($request->has('category_id')) {
+        if ($request->filled('category_id')) {
             $query->where('category_id', $request->category_id);
         }
 
-        if ($request->has('type')) {
+        if ($request->filled('type')) {
             $query->where('type', $request->type);
         }
 
-        if ($request->has('start_date')) {
+        if ($request->filled('start_date')) {
             $query->where('date', '>=', $request->start_date);
         }
 
-        if ($request->has('end_date')) {
+        if ($request->filled('end_date')) {
             $query->where('date', '<=', $request->end_date);
         }
 
-        $expenses = $query->where('user_id', auth()->user()->id)->get();
+        $expenses = $query
+            ->where('user_id', auth()->user()->id)
+            ->with(['farm:id,name', 'crop:id,name', 'category:id,name'])
+            ->latest()
+            ->paginate(10);
 
         return response()->json([
             'success' => true,
@@ -52,18 +56,39 @@ class ExpenseController extends Controller
         ]);
     }
 
-    public function getAllExpenses() {
+    public function getAllExpenses(Request $request)
+    {
+        $query = Expense::where('user_id', auth()->user()->id);
+
+        if ($request->filled('type')) {
+            $query->where('type', $request->type);
+        }
+
+        if ($request->filled('category_id')) {
+            $query->where('category_id', $request->category_id);
+        }
+
+        if ($request->filled('start_date')) {
+            $query->where('date', '>=', $request->start_date);
+        }
+
+        if ($request->filled('end_date')) {
+            $query->where('date', '<=', $request->end_date);
+        }
+
+        $expenses = $query
+            ->with(['farm:id,name', 'crop:id,name', 'category:id,name'])
+            ->latest()
+            ->paginate(10);
+
         return response()->json([
             'success' => true,
             'message' => 'expenses fetched successfully',
-            'data' => Expense::where('user_id', auth()->user()->id)->get()
+            'data' => $expenses
         ]);
     }
 
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -95,16 +120,13 @@ class ExpenseController extends Controller
         ]);
 
         return response()->json([
-            'success'=> true,
-            'message'=> "expense created successfully",
-            'data'=> $expense
+            'success' => true,
+            'message' => "expense created successfully",
+            'data' => $expense
         ]);
     }
 
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -128,18 +150,15 @@ class ExpenseController extends Controller
         $data['user_id'] = auth()->user()->id;
         $expense = Expense::findOrFail($id);
         $expense->update($data);
-       
+
 
         return response()->json([
-            'success'=> true,
-            'message'=> "expense updated successfully",
-            'data'=> $expense
+            'success' => true,
+            'message' => "expense updated successfully",
+            'data' => $expense
         ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy($id)
     {
         $expense = Expense::findOrFail($id);
@@ -147,7 +166,7 @@ class ExpenseController extends Controller
         return response()->json([
             'success' => true,
             'message' => "expense deleted successfully",
-            "data"=> $expense
+            "data" => $expense
         ]);
     }
 }

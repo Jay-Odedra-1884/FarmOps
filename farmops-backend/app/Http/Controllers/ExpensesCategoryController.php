@@ -10,35 +10,29 @@ use Illuminate\Support\Facades\Validator;
 class ExpensesCategoryController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Return global (user_id = null) + authenticated user's own categories.
      */
     public function index()
     {
+        $categories = ExpensesCategory::where('user_id', auth()->user()->id)->orderBy('name')->get();
+
         return response()->json([
             'success' => true,
             'message' => 'Expenses Categories Fetched Successfully',
-            'data' => ExpensesCategory::all()
+            'data' => $categories
         ]);
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
+     * Store a user-created custom category.
      */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:50',
         ]);
 
-        if($validator->fails()) {
+        if ($validator->fails()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Validation Error',
@@ -46,69 +40,51 @@ class ExpensesCategoryController extends Controller
             ]);
         }
 
-        $expensesCategory = ExpensesCategory::create($request->all());
+        $category = ExpensesCategory::create([
+            'name' => $request->name,
+            'user_id' => auth()->user()->id, // always tied to the authenticated user
+        ]);
 
         return response()->json([
             'success' => true,
-            'message' => 'Expenses Category Created Successfully',
-            'data' => $expensesCategory
+            'message' => 'Category Created Successfully',
+            'data' => $category
         ]);
     }
 
     /**
-     * Display the specified resource.
+     * Delete a category — only user's own custom categories can be deleted.
      */
-    public function show(ExpensesCategory $expensesCategory)
+    public function destroy($id)
     {
-        //
-    }
+        $category = ExpensesCategory::find($id);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ExpensesCategory $expensesCategory)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-        ]);
-
-        if($validator->fails()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Validation Error',
-                'errors' => $validator->errors()
-            ]);
+        if (!$category) {
+            return response()->json(['success' => false, 'message' => 'Category not found'], 404);
         }
 
-        $expensesCategory = ExpensesCategory::find($id);
-        $expensesCategory->update($request->all());
+        // Prevent deleting global/default categories
+        if (is_null($category->user_id)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Default categories cannot be deleted'
+            ], 403);
+        }
+
+        // Prevent deleting another user's category
+        if ($category->user_id !== auth()->id()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Unauthorized'
+            ], 403);
+        }
+
+        $category->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Expenses Category Updated Successfully',
-            'data' => $expensesCategory
-        ]);
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ExpensesCategory $expensesCategory)
-    {
-        $expensesCategory->delete();
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Expenses Category Deleted Successfully',
-            'data' => $expensesCategory
+            'message' => 'Category Deleted Successfully',
+            'data' => $category
         ]);
     }
 }

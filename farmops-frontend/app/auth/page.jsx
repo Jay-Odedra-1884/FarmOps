@@ -15,7 +15,7 @@ function Page() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [isLogin, setIsLogin] = useState(true);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const [error, setError] = useState({});
 
     useEffect(() => {
         if (authToken) {
@@ -25,23 +25,79 @@ function Page() {
         }
     }, [authToken]);
 
+
+    //handle login
+    const validateLogin = () => {
+        let newErrors = {};
+        if(!email){
+            newErrors.email = 'Email is required';
+        }
+        if(!password){
+            newErrors.password = 'Password is required';
+        }
+        setError(newErrors);
+        return Object.keys(newErrors).length === 0;
+    }
+
     const handleLoginSubmit = async (e) => {
         e.preventDefault();
-        setError('');
-        setLoading(true);
-        try {
-            await login(email, password);
-        } catch (e) {
-            console.error(`ERROR: ${e}`);
-            setError('Invalid email or password');
-        } finally {
-            setLoading(false);
+        if(validateLogin()){
+            setError('');
+            setLoading(true);
+            try {
+                await login(email, password);
+            } catch (e) {
+                console.error(`ERROR: ${e}`);
+                setError('Invalid email or password');
+            } finally {
+                setLoading(false);
+            }
         }
+    }
+
+    //handle register
+    const validateRegister = () => {
+        let newErrors = {};
+        if(!name){
+            newErrors.name = 'Name is required';
+        }
+        if(/^[0-9]+$/.test(name)){
+            newErrors.name = 'Name must not be a number';
+        }
+        if(name.length < 3 || name.length > 20){
+            newErrors.name = 'Name must be at least 3 to 20 characters long';
+        }
+        if(!email){
+            newErrors.email = 'Email is required';
+        }
+        if(!mobile){
+            newErrors.mobile = 'Mobile is required';
+        }
+        if(mobile.length !== 10){
+            newErrors.mobile = 'Mobile must be 10 digits';
+        }
+        if(!password){
+            newErrors.password = 'Password is required';
+        }
+        if(password.length < 6 || password.length > 20){
+            newErrors.password = 'Password must be at least 6 to 20 characters long';
+        }
+        if(!confirmPassword){
+            newErrors.confirmPassword = 'Confirm Password is required';
+        }
+        if(confirmPassword.length < 6 || confirmPassword.length > 20){
+            newErrors.confirmPassword = 'Confirm Password must be at least 6 to 20 characters long';
+        }
+        if(confirmPassword !== password){
+            newErrors.confirmPassword = 'Confirm Password does not match';
+        }
+        setError(newErrors);
+        return Object.keys(newErrors).length === 0;
     }
 
     const handleRegisterSubmit = async (e) => {
         e.preventDefault();
-        setError('');
+        if(!validateRegister()) return;
         
         if (password !== confirmPassword) {
             setError('Passwords do not match');
@@ -64,12 +120,6 @@ function Page() {
             {isLogin ? (
                 <div className='w-full max-w-md flex flex-col justify-center items-center gap-2 bg-white py-12 px-10 rounded-3xl shadow-2xl'>
                     <h2 className='mb-8 font-bold text-4xl text-gray-800'>Login</h2>
-                    
-                    {error && (
-                        <div className="w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
-                            <p className="text-red-600 text-sm text-center">{error}</p>
-                        </div>
-                    )}
 
                     <form onSubmit={handleLoginSubmit} className='w-full flex flex-col gap-5 items-center'>
                         <input
@@ -79,8 +129,8 @@ function Page() {
                             name='email'
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            required
                         />
+                        {error.email && <p className='text-red-500 text-sm'>{error.email}</p>}
                         <input
                             className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Password'
@@ -88,8 +138,8 @@ function Page() {
                             name='password'
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
                         />
+                        {error.password && <p className='text-red-500 text-sm'>{error.password}</p>}
                         <button 
                             type="submit"
                             disabled={loading}
@@ -108,13 +158,6 @@ function Page() {
             ) : (
                 <div className='w-full max-w-md flex flex-col justify-center items-center gap-2 bg-white py-12 px-10 rounded-3xl shadow-2xl'>
                     <h2 className='mb-8 font-bold text-4xl text-gray-800'>Sign Up</h2>
-                    
-                    {error && (
-                        <div className="w-full mb-4 p-3 bg-red-50 border border-red-200 rounded-xl">
-                            <p className="text-red-600 text-sm text-center">{error}</p>
-                        </div>
-                    )}
-
                     <form onSubmit={handleRegisterSubmit} className='w-full flex flex-col gap-5 items-center'>
                         <input
                             className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
@@ -123,8 +166,8 @@ function Page() {
                             name='name'
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            required
                         />
+                        {error.name && <p className='text-red-500 text-sm'>{error.name}</p>}
                         <input
                             className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Email'
@@ -132,8 +175,8 @@ function Page() {
                             name='email'
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            required
                         />
+                        {error.email && <p className='text-red-500 text-sm'>{error.email}</p>}
                         <input
                             className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Mobile'
@@ -142,6 +185,7 @@ function Page() {
                             value={mobile}
                             onChange={(e) => setMobile(e.target.value)}
                         />
+                        {error.mobile && <p className='text-red-500 text-sm'>{error.mobile}</p>}
                         <input
                             className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Password'
@@ -149,8 +193,8 @@ function Page() {
                             name='password'
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            required
                         />
+                        {error.password && <p className='text-red-500 text-sm'>{error.password}</p>}
                         <input
                             className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Confirm Password'
@@ -158,8 +202,8 @@ function Page() {
                             name='confirmPassword'
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            required
                         />
+                        {error.confirmPassword && <p className='text-red-500 text-sm'>{error.confirmPassword}</p>}
                         <button 
                             type="submit"
                             disabled={loading}
@@ -177,4 +221,4 @@ function Page() {
     )
 }
 
-export default Page
+export default Page;

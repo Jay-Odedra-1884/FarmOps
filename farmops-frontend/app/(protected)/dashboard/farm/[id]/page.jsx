@@ -4,25 +4,24 @@ import React, { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { MyHook } from "@/context/AppProvider";
 import { getFarmById, updateFarm, deleteFarm } from "@/services/FarmApi";
-import { addCrop, getCrop, updateCrop, deleteCrop } from "@/services/cropApi";
 import { Spinner } from "@/components/ui/spinner";
+import ExpenseList from "@/components/dashboard/ExpenseList";
 import {
   MapPinIcon,
   SquaresSubtractIcon,
   ArrowLeftIcon,
   Trash2Icon,
   Edit2Icon,
-  SproutIcon,
-  CheckIcon,
-  XIcon,
-  PlusIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { getFarmStats } from "@/services/statsApi";
+import CropList from "@/components/dashboard/CropList";
 
 function FarmDetailPage() {
   const { id: farmId } = useParams();
   const router = useRouter();
-  const { authToken } = MyHook();
+  const { authToken, expenseVersion, notifyExpenseChange, notifyFarmChange } =
+    MyHook();
 
   // Farm state
   const [farm, setFarm] = useState(null);
@@ -32,17 +31,12 @@ function FarmDetailPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const editFormRef = useRef(null);
   const [farmErrors, setFarmErrors] = useState({});
-  const [cropErrors, setCropErrors] = useState({});
 
-  // Crops state
-  const [crops, setCrops] = useState([]);
-  const [cropsLoading, setCropsLoading] = useState(true);
-  const [addCropName, setAddCropName] = useState("");
-  const [isAddingCrop, setIsAddingCrop] = useState(false);
-  const [editingCropId, setEditingCropId] = useState(null);
-  const [editingCropName, setEditingCropName] = useState("");
-  const [deletingCropId, setDeletingCropId] = useState(null);
+  //stats state
+  const [stats, setStats] = useState({});
+  const [statsLoading, setStatsLoading] = useState(false);
 
+  // Farm data — only loads once (on mount / farmId change), not on expense add
   useEffect(() => {
     if (authToken && farmId) {
       setLoading(true);
@@ -53,16 +47,21 @@ function FarmDetailPage() {
         })
         .catch(console.error)
         .finally(() => setLoading(false));
-
-      setCropsLoading(true);
-      getCrop(authToken, farmId)
-        .then((res) => {
-          if (res.success) setCrops(res.data);
-        })
-        .catch(console.error)
-        .finally(() => setCropsLoading(false));
     }
   }, [authToken, farmId]);
+
+  // Stats — re-fetches whenever an expense is added/deleted (expenseVersion bump)
+  useEffect(() => {
+    if (authToken && farmId) {
+      setStatsLoading(true);
+      getFarmStats(authToken, farmId)
+        .then((res) => {
+          setStats(res.data);
+        })
+        .catch(console.error)
+        .finally(() => setStatsLoading(false));
+    }
+  }, [authToken, farmId, expenseVersion]);
 
   // Farm handlers
   const validateFarmForm = (data) => {
@@ -72,6 +71,7 @@ function FarmDetailPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
   const handleFarmEditSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(editFormRef.current);
@@ -85,6 +85,7 @@ function FarmDetailPage() {
       if (response.success) {
         setFarm(response.data || { ...farm, ...updateData });
         setIsEditFormOpen(false);
+        notifyFarmChange();
         setFarmErrors({});
       }
     }
@@ -94,74 +95,17 @@ function FarmDetailPage() {
     setIsDeleting(true);
     try {
       const response = await deleteFarm(authToken, farmId);
-      if (response.success) router.push("/dashboard");
+      if (response.success) {
+        notifyExpenseChange(); // cascade-deleted expenses → reload lists & stats
+        notifyFarmChange(); // farm removed → update farm dropdowns
+        router.push("/dashboard");
+      }
     } catch (err) {
       console.error(err);
     } finally {
       setIsDeleting(false);
       setDeleteModalOpen(false);
     }
-  };
-
-  // Crop handlers
-  const validateCropForm = () => {
-    const newErrors = {};
-    if (!addCropName.trim()) newErrors.cropName = "Crop name is required";
-    setCropErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const handleAddCrop = async (e) => {
-    e.preventDefault();
-    if (validateCropForm()) {
-      setIsAddingCrop(true);
-      const res = await addCrop(authToken, {
-        name: addCropName.trim(),
-        farm_id: farmId,
-      });
-      if (res?.success) {
-        setCrops((prev) => [...prev, res.data]);
-        setAddCropName("");
-      }
-    }
-    setIsAddingCrop(false);
-  };
-
-  const handleStartEditCrop = (crop) => {
-    setEditingCropId(crop.id);
-    setEditingCropName(crop.name);
-  };
-
-  const handleCancelEditCrop = () => {
-    setEditingCropId(null);
-    setEditingCropName("");
-  };
-
-  const handleSaveEditCrop = async (cropId) => {
-    if (!editingCropName.trim()) return;
-    const res = await updateCrop(
-      authToken,
-      { name: editingCropName.trim() },
-      cropId,
-    );
-    if (res?.success) {
-      setCrops((prev) =>
-        prev.map((c) =>
-          c.id === cropId ? { ...c, name: editingCropName.trim() } : c,
-        ),
-      );
-    }
-    setEditingCropId(null);
-    setEditingCropName("");
-  };
-
-  const handleDeleteCrop = async (cropId) => {
-    setDeletingCropId(cropId);
-    const res = await deleteCrop(authToken, cropId);
-    if (res?.success) {
-      setCrops((prev) => prev.filter((c) => c.id !== cropId));
-    }
-    setDeletingCropId(null);
   };
 
   // ── Render ─────────────────────────────────────────────
@@ -283,6 +227,7 @@ function FarmDetailPage() {
                       </label>
                       <input
                         type="number"
+                        step="any"
                         name="farmSize"
                         defaultValue={farm.size || ""}
                         placeholder="Farm Size"
@@ -341,139 +286,39 @@ function FarmDetailPage() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="w-full h-24 text-black bg-white shadow rounded-2xl flex flex-col justify-center items-center">
           <p className="text-sm font-medium text-gray-500">Expenses</p>
-          <p className="text-red-500 text-2xl font-bold mt-1">₹0</p>
+          <p className="text-red-500 text-2xl font-bold mt-1">
+            {statsLoading ? (
+              <Spinner className="size-8" />
+            ) : (
+              "₹" + stats.expenses
+            )}
+          </p>
         </div>
         <div className="w-full h-24 text-black bg-white shadow rounded-2xl flex flex-col justify-center items-center">
           <p className="text-sm font-medium text-gray-500">Income</p>
-          <p className="text-green-500 text-2xl font-bold mt-1">₹0</p>
+          <p className="text-green-500 text-2xl font-bold mt-1">
+            {statsLoading ? <Spinner className="size-8" /> : "₹" + stats.income}
+          </p>
         </div>
         <div className="w-full h-24 text-black bg-white shadow rounded-2xl flex flex-col justify-center items-center">
           <p className="text-sm font-medium text-gray-500">Profit</p>
-          <p className="text-blue-500 text-2xl font-bold mt-1">₹0</p>
+          <p
+            className={`text-2xl font-bold mt-1 ${stats.profit < 0 ? "text-red-500" : "text-green-500"}`}
+          >
+            {statsLoading ? (
+              <Spinner className="size-8 text-blue-500" />
+            ) : (
+              "₹" + stats.profit
+            )}
+          </p>
         </div>
       </div>
 
       {/* Crops Section */}
-      <div className="w-full bg-white shadow rounded-2xl p-6">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4 shrink-0">
-          <h2 className="text-xl font-semibold text-gray-800 flex items-center gap-2">
-            <SproutIcon className="size-5 text-green-600" /> Crops
-          </h2>
+      <CropList farmId={farmId} />
 
-          {/* Add crop inline form */}
-          <form onSubmit={handleAddCrop} className="flex items-center gap-0">
-            <input
-              type="text"
-              value={addCropName}
-              onChange={(e) => setAddCropName(e.target.value)}
-              placeholder={
-                cropErrors.cropName ? cropErrors.cropName : "New crop name..."
-              }
-              className={`border border-gray-300 border-r-0 rounded-l-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 ${cropErrors.cropName ? "border-red-500 text-red-500" : ""}`}
-            />
-
-            <button
-              type="submit"
-              className="bg-green-600 text-white px-3 py-1.5 border border-green-600 rounded-r-lg text-sm font-medium hover:bg-green-700 transition cursor-pointer flex items-center gap-1"
-            >
-              <PlusIcon className="size-4" />
-              {isAddingCrop ? "Adding..." : "Add"}
-            </button>
-          </form>
-        </div>
-
-        <hr className="border-gray-100 mb-4" />
-
-        {/* Crop list */}
-        {cropsLoading ? (
-          <div className="flex justify-center py-10">
-            <Spinner className="size-8" />
-          </div>
-        ) : crops.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-gray-400">
-            <SproutIcon className="size-10 mb-3 text-gray-300" />
-            <p className="text-sm">
-              No crops added yet. Add your first crop above.
-            </p>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-2">
-            {crops.map((crop) => (
-              <div
-                key={crop.id}
-                className="w-full bg-gray-50 border border-gray-100 rounded-xl px-4 py-3 flex items-center justify-between transition-all duration-150 hover:bg-gray-100"
-              >
-                {/* Crop name / edit input */}
-                {editingCropId === crop.id ? (
-                  <input
-                    autoFocus
-                    type="text"
-                    value={editingCropName}
-                    onChange={(e) => setEditingCropName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleSaveEditCrop(crop.id);
-                      if (e.key === "Escape") handleCancelEditCrop();
-                    }}
-                    className="flex-1 bg-white border border-green-400 rounded-lg px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-green-500 mr-3"
-                  />
-                ) : (
-                  <div className="flex items-center gap-2">
-                    <SproutIcon className="size-4 text-green-500" />
-                    <span className="font-medium text-gray-800">
-                      {crop.name}
-                    </span>
-                  </div>
-                )}
-
-                {/* Action buttons */}
-                <div className="flex items-center gap-2">
-                  {editingCropId === crop.id ? (
-                    <>
-                      <button
-                        onClick={() => handleSaveEditCrop(crop.id)}
-                        className="p-1.5 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition"
-                        title="Save"
-                      >
-                        <CheckIcon className="size-4" />
-                      </button>
-                      <button
-                        onClick={handleCancelEditCrop}
-                        className="p-1.5 rounded-lg bg-gray-100 text-gray-500 hover:bg-gray-200 transition"
-                        title="Cancel"
-                      >
-                        <XIcon className="size-4" />
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      <button
-                        onClick={() => handleStartEditCrop(crop)}
-                        className="p-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 transition"
-                        title="Edit crop"
-                      >
-                        <Edit2Icon className="size-3.5" />
-                      </button>
-                      <button
-                        onClick={() => handleDeleteCrop(crop.id)}
-                        disabled={deletingCropId === crop.id}
-                        className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 border border-red-200 transition disabled:opacity-40"
-                        title="Delete crop"
-                      >
-                        {deletingCropId === crop.id ? (
-                          <Spinner className="size-3.5" />
-                        ) : (
-                          <Trash2Icon className="size-3.5" />
-                        )}
-                      </button>
-                    </>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {/* Expense List for this Farm */}
+      <ExpenseList farmId={farmId} showFarm={false} title="Farm Transactions" />
     </div>
   );
 }

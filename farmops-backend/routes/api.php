@@ -10,6 +10,7 @@ use App\Http\Controllers\LikeController;
 use App\Http\Controllers\MailController;
 use App\Http\Controllers\ExpensesCategoryController;
 use App\Http\Controllers\FarmController;
+use App\Http\Controllers\StatsController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -49,6 +50,11 @@ Route::group([
     //expenses
     Route::resource('expenses', ExpenseController::class);
     Route::get('all-expenses', [ExpenseController::class, 'getAllExpenses']);
+
+
+    //to get the stats
+    Route::get('user-stats', [StatsController::class, 'getUserStats']);
+    Route::get('farm-stats/{id}', [StatsController::class, 'getFarmStats']);
 
 });
 

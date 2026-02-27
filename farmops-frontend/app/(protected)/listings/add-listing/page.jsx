@@ -13,6 +13,7 @@ function page() {
   const [categories, setCategories] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [error, setError] = useState({});
 
   const router = useRouter();
 
@@ -40,6 +41,32 @@ function page() {
     setPreviewUrl(null);
   }, [imageFile]);
 
+  const validateForm = (data) => {
+    let newErrors = {};
+    
+    if (!data.get('title')) {
+      newErrors.title = 'Title is required';
+    }
+    if(data.get('title') && data.get('title')?.length < 3 || data.get('title')?.length > 100){
+      newErrors.title = 'Title must be at least 3 to 100 characters long';
+    }
+    if(data.get('title') && /^[0-9]+$/.test(data.get('title'))) {
+      newErrors.title = 'Title must not be a number';
+    }
+    if (!data.get('description')) {
+      newErrors.description = 'Description is required';
+    }
+    if (!data.get('category_id')) {
+      newErrors.category_id = 'Category is required';
+    }
+    if(data.get('image') && !(["image/jpeg", "image/png", "image/webp"].includes(data.get('image')?.type))) {
+      newErrors.image = 'Image must be a valid image file';
+    }
+    
+    setError(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (editorRef.current) {
@@ -50,7 +77,7 @@ function page() {
 
       // Log form data for debugging
       const formData = new FormData(e.target);
-      console.log("Form Data:", Object.fromEntries(formData));
+      if(!validateForm(formData)) return;
 
       const result = await addListing(authToken, formData);
       if (result) {
@@ -77,9 +104,9 @@ function page() {
               type="text"
               name='title'
               placeholder='Enter listing title'
-              required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
             />
+            {error.title && <p className="text-red-500 text-sm mt-2">{error.title}</p>}
           </div>
 
           {/* Description Field */}
@@ -88,6 +115,7 @@ function page() {
             <RichTextEditor editorRef={editorRef} />
             {/* Hidden input to store TipTap content */}
             <input type="hidden" name="description" />
+            {error.description && <p className="text-red-500 text-sm mt-2">{error.description}</p>}
           </div>
 
 
@@ -96,7 +124,6 @@ function page() {
             <label className="block text-sm font-semibold text-gray-700 mb-2">Category *</label>
             <select
               name='category_id'
-              required
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all"
             >
               <option value="">Select a category</option>
@@ -104,6 +131,7 @@ function page() {
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
+            {error.category_id && <p className="text-red-500 text-sm mt-2">{error.category_id}</p>}
           </div>
           {/* previe image */}
           <div>
@@ -120,10 +148,10 @@ function page() {
             <input
               type="file"
               name='image'
-              accept="image/*"
               onChange={(e) => setImageFile(e.target.files?.[0] || null)}
               className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent transition-all file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-gray-200 file:text-black hover:file:bg-gray-300"
             />
+            {error.image && <p className="text-red-500 text-sm mt-2">{error.image}</p>}
           </div>
 
           {/* Submit Button */}

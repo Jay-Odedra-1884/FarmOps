@@ -27,12 +27,16 @@ export default function RootLayout({ children }) {
         
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased h-screen overflow-hidden flex flex-col`}
       >
         <AppProvider>
-                   <NavBar />
-        <Toaster />
-        {children}
+          {/* NavBar — fixed top strip, never scrolls */}
+          <NavBar />
+          <Toaster />
+          {/* Page content — fills all remaining height, each page controls its own scroll */}
+          <div className="flex-1 overflow-hidden">
+            {children}
+          </div>
         </AppProvider>
       </body>
     </html>

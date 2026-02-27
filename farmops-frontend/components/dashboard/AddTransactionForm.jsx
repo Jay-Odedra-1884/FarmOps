@@ -4,57 +4,72 @@ import React, { useEffect, useState } from "react";
 import { MyHook } from "@/context/AppProvider";
 import { getFarms } from "@/services/FarmApi";
 import { getCrop } from "@/services/cropApi";
-import { getExpenseCategories, addExpense } from "@/services/expenseApi";
+import {
+  getExpenseCategories,
+  addExpense,
+  addExpenseCategory,
+} from "@/services/expenseApi";
 import { Spinner } from "@/components/ui/spinner";
-import { PlusCircleIcon } from "lucide-react";
+import { PlusIcon, XIcon } from "lucide-react";
 
 function AddTransactionForm() {
-  const { authToken } = MyHook();
+  const {
+    authToken,
+    notifyExpenseChange,
+    notifyFarmChange,
+    farmVersion,
+    categoryVersion,
+    notifyCategoryChange,
+  } = MyHook();
 
   // ─── Dropdown Data ────────────────────────────────────────────────────────
-  // These hold the list of options fetched from the backend for each dropdown
-  const [farms, setFarms] = useState([]); // All farms belonging to the user
-  const [crops, setCrops] = useState([]); // Crops for the currently selected farm
-  const [categories, setCategories] = useState([]); // All expense categories (e.g. Seed, Fertilizer)
+  const [farms, setFarms] = useState([]);
+  const [crops, setCrops] = useState([]);
+  const [categories, setCategories] = useState([]);
 
   // ─── Loading States ───────────────────────────────────────────────────────
-  // Control individual spinners so each dropdown loads independently
   const [farmsLoading, setFarmsLoading] = useState(true);
-  const [cropsLoading, setCropsLoading] = useState(false); // Only loads after a farm is selected
+  const [cropsLoading, setCropsLoading] = useState(false);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false); // True while the form is being submitted
+  const [submitting, setSubmitting] = useState(false);
+
+  // ─── New Category Inline UI State ─────────────────────────────────────────
+  const [showCategoryInput, setShowCategoryInput] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [savingCategory, setSavingCategory] = useState(false);
 
   // ─── Form Field State ─────────────────────────────────────────────────────
-  const [selectedFarmId, setSelectedFarmId] = useState(""); // ID of the chosen farm
-  const [selectedCropId, setSelectedCropId] = useState(""); // ID of the chosen crop
-  const [selectedCategoryId, setSelectedCategoryId] = useState(""); // ID of the chosen category
-  const [type, setType] = useState("expense"); // "expense" or "income" — controlled by toggle buttons
-  const [amount, setAmount] = useState(""); // Transaction amount (number)
-  const [note, setNote] = useState(""); // Optional note / description
-  const [errors, setErrors] = useState({}); // Stores validation error messages per field
+  const [selectedFarmId, setSelectedFarmId] = useState("");
+  const [selectedCropId, setSelectedCropId] = useState("");
+  const [selectedCategoryId, setSelectedCategoryId] = useState("");
+  const [type, setType] = useState("expense");
+  const [amount, setAmount] = useState("");
+  const [note, setNote] = useState("");
+  const [errors, setErrors] = useState({});
 
-  // ─── Fetch Farms & Categories on Mount ───────────────────────────────────
-  // This runs once when the component loads (or when authToken becomes available).
-  // We fetch farms and categories in parallel so the form is ready quickly.
+  // ─── Fetch Farms (watches farmVersion) ───────────────────────────────────
+  // Re-runs only when farms change (add farm, delete farm, add/delete crop).
   useEffect(() => {
     if (!authToken) return;
-
-    // Fetch user's farms for the Farm dropdown
     setFarmsLoading(true);
     getFarms(authToken)
       .then((res) => {
         if (res?.success) setFarms(res.data);
       })
       .finally(() => setFarmsLoading(false));
+  }, [authToken, farmVersion]);
 
-    // Fetch expense categories (e.g. Seed, Fertilizer, Labour) for the Category dropdown
+  // ─── Fetch Categories (watches categoryVersion) ───────────────────────────
+  // Re-runs only when a user adds or deletes a custom category.
+  useEffect(() => {
+    if (!authToken) return;
     setCategoriesLoading(true);
     getExpenseCategories(authToken)
       .then((res) => {
         if (res?.success) setCategories(res.data);
       })
       .finally(() => setCategoriesLoading(false));
-  }, [authToken]);
+  }, [authToken, categoryVersion]);
 
   // ─── Fetch Crops When Farm Changes ───────────────────────────────────────
   // Every time the user picks a different farm, we re-fetch crops for that farm.
@@ -93,29 +108,36 @@ function AddTransactionForm() {
     return Object.keys(newErrors).length === 0; // Valid if no errors
   };
 
+  // ─── Add Custom Category Handler ─────────────────────────────────────────
+  const handleAddCategory = async (e) => {
+    e?.preventDefault();
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) return;
+    setSavingCategory(true);
+    const res = await addExpenseCategory(authToken, trimmed);
+    if (res?.success) {
+      setNewCategoryName("");
+      setShowCategoryInput(false);
+      setSelectedCategoryId(String(res.data.id)); // auto-select the new category
+      notifyCategoryChange(); // only category dropdown re-fetches
+    }
+    setSavingCategory(false);
+  };
+
   // ─── Form Submit Handler ──────────────────────────────────────────────────
-  // Called when the user clicks "Add Expense" or "Add Income".
-  // 1. Validates the form — stops if invalid
-  // 2. Calls the API to create the expense record
-  // 3. Resets the form on success (toast is shown inside addExpense())
   const handleSubmit = async (e) => {
-    e.preventDefault(); // Prevent page reload on form submit
-
-    if (!validate()) return; // Stop if validation fails
-
+    e.preventDefault();
+    if (!validate()) return;
     setSubmitting(true);
-
     const res = await addExpense(authToken, {
-      amount: parseFloat(amount), // Send as a number, not string
-      note: note.trim() || null, // Send null if note is empty
-      type, // "expense" or "income"
+      amount: parseFloat(amount),
+      note: note.trim() || null,
+      type,
       farm_id: parseInt(selectedFarmId),
       crop_id: parseInt(selectedCropId),
       category_id: parseInt(selectedCategoryId),
     });
-
     if (res?.success) {
-      // Clear the entire form after a successful submission
       setAmount("");
       setNote("");
       setType("expense");
@@ -123,8 +145,8 @@ function AddTransactionForm() {
       setSelectedCropId("");
       setSelectedCategoryId("");
       setErrors({});
+      notifyExpenseChange(); // only expense lists & stats re-fetch
     }
-
     setSubmitting(false);
   };
 
@@ -136,21 +158,18 @@ function AddTransactionForm() {
         Add Transaction
       </h2>
 
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-3 flex-1 "
-      >
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3 flex-1 ">
         {/* ── Type Toggle (Expense / Income) ──
                     Two buttons that act as a toggle. Clicking one sets the `type` state.
                     The active button is highlighted in color (red for expense, green for income).
                     The submit button color also changes to match the selected type. */}
-        <div className="flex rounded-lg overflow-hidden border border-gray-200">
+        <div className="flex rounded-lg overflow-hidden border">
           <button
             type="button"
             onClick={() => setType("expense")}
-            className={`flex-1 py-2 text-sm font-medium transition-all border-2 ${
+            className={`flex-1 py-2 text-sm font-medium transition-all ${
               type === "expense"
-                ? "bg-red-500 text-white border-red-500"
+                ? "bg-red-500 text-white"
                 : "bg-white text-gray-500 hover:bg-gray-50"
             }`}
           >
@@ -159,9 +178,9 @@ function AddTransactionForm() {
           <button
             type="button"
             onClick={() => setType("income")}
-            className={`flex-1 py-2 text-sm font-medium transition-all border-2 ${
+            className={`flex-1 py-2 text-sm font-medium transition-all ${
               type === "income"
-                ? "bg-green-600 text-white border-green-600"
+                ? "bg-green-600 text-white"
                 : "bg-white text-gray-500 hover:bg-gray-50"
             }`}
           >
@@ -208,13 +227,72 @@ function AddTransactionForm() {
           />
         </div>
 
-        {/* ── Category Dropdown ──
-                    Fetched from GET /expenses-categories on mount.
-                    Shows a spinner while loading. */}
-        <div>
-          <label className="block text-xs font-medium text-gray-600 mb-1">
-            Category *
-          </label>
+        {/* ── Category Dropdown + Add Popup ── */}
+        <div className="relative">
+          <div className="flex items-center justify-between mb-1">
+            <label className="block text-xs font-medium text-gray-600">
+              Category *
+            </label>
+
+            {/* "+ New" button — toggles the popup */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCategoryInput((v) => !v);
+                  setNewCategoryName("");
+                }}
+                className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium transition cursor-pointer"
+              >
+                <PlusIcon className="size-3" />
+                {showCategoryInput ? "Cancel" : "Add New Category"}
+              </button>
+
+              {/* Popup card */}
+              {showCategoryInput && (
+                <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
+                  <div className="flex justify-between items-center mb-3">
+                    <h3 className="text-sm font-semibold text-gray-800">
+                      New Category
+                    </h3>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowCategoryInput(false);
+                        setNewCategoryName("");
+                      }}
+                      className="text-gray-400 hover:text-gray-600 transition"
+                    >
+                      <XIcon className="size-4" />
+                    </button>
+                  </div>
+                  <div className="flex flex-col gap-3">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleAddCategory(e);
+                      }}
+                      placeholder="e.g. Pesticides"
+                      maxLength={50}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-green-500 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddCategory}
+                      disabled={savingCategory || !newCategoryName.trim()}
+                      className="w-full bg-green-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition disabled:opacity-50"
+                    >
+                      {savingCategory ? "Saving..." : "Add Category"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
           {categoriesLoading ? (
             <div className="flex items-center gap-2 text-gray-400 text-sm py-1">
               <Spinner className="size-4" /> Loading...
@@ -230,7 +308,7 @@ function AddTransactionForm() {
               <option value="">Select category</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>
-                  {cat.name}
+                  {cat.user_id ? `${cat.name}` : cat.name}
                 </option>
               ))}
             </select>
