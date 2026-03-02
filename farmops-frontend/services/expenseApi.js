@@ -73,6 +73,54 @@ export const getExpensesByFarm = async (authToken, farmId, page = 1, filter = {}
     }
 };
 
+export const updateExpense = async (authToken, id, data) => {
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/expenses/${id}`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`,
+            },
+            body: JSON.stringify(data),
+        });
+        const json = await res.json();
+        if (json.success) {
+            toast.success("Transaction updated!");
+        } else {
+            const firstError = json.errors
+                ? Object.values(json.errors)[0][0]
+                : json.message;
+            toast.error(firstError || "Failed to update transaction");
+        }
+        return json;
+    } catch (error) {
+        toast.error("Failed to update transaction");
+        console.error(error);
+    }
+};
+
+export const deleteExpense = async (authToken, id) => {
+    try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/expenses/${id}`, {
+            method: "DELETE",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${authToken}`,
+            },
+        });
+        const json = await res.json();
+        if (json.success) {
+            toast.success("Transaction deleted!");
+        } else {
+            toast.error(json.message || "Failed to delete transaction");
+        }
+        return json;
+    } catch (error) {
+        toast.error("Failed to delete transaction");
+        console.error(error);
+    }
+};
+
 export const addExpenseCategory = async (authToken, name) => {
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/expenses-categories`, {
