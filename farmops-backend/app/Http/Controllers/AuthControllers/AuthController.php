@@ -63,9 +63,9 @@ class AuthController extends Controller
         $token = $user->createToken('MyToken')->plainTextToken;
 
         // Send welcome back email
-        $msg = "Welcome back to FarmOps! You have successfully logged in.";
+        // $msg = "Welcome back to FarmOps! You have successfully logged in.";
         // Mail::to($user->email)->send(new WelcomeMail($msg, 'Welcome Back to FarmOps'));
-        SendWelcomeMailJob::dispatch($msg, $user);
+        // SendWelcomeMailJob::dispatch($msg, $user);
 
 
         return response()->json([

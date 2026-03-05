@@ -18,6 +18,8 @@ export const getExpenseCategories = async (authToken) => {
 
 export const addExpense = async (authToken, expenseData) => {
     try {
+        console.log(expenseData);
+        
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/expenses`, {
             method: "POST",
             headers: {

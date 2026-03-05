@@ -166,6 +166,9 @@ function ExpenseList({
       category_id: expense.category_id ? String(expense.category_id) : "",
       crop_id: expense.crop_id ? String(expense.crop_id) : "",
       farm_id: expense.farm_id ? String(expense.farm_id) : "",
+      expense_date: expense.expense_date
+        ? expense.expense_date.slice(0, 10)
+        : new Date().toLocaleDateString("en-CA"),
     });
     setEditErrors({});
   };
@@ -198,6 +201,7 @@ function ExpenseList({
       category_id: parseInt(editForm.category_id),
       crop_id: editForm.crop_id ? parseInt(editForm.crop_id) : undefined,
       farm_id: editForm.farm_id ? parseInt(editForm.farm_id) : undefined,
+      expense_date: editForm.expense_date || undefined,
     });
 
     if (res?.success) {
@@ -210,6 +214,7 @@ function ExpenseList({
                 type: editForm.type,
                 amount: editForm.amount,
                 note: editForm.note?.trim() || null,
+                expense_date: editForm.expense_date,
                 farm:
                   farms.find((f) => String(f.id) === editForm.farm_id) ||
                   e.farm,

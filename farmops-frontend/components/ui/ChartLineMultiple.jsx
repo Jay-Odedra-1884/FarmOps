@@ -65,7 +65,7 @@ export function ChartLineMultiple({ data = [] }) {
     const map = {};
 
     data.forEach((record) => {
-      const date = new Date(record.created_at);
+      const date = new Date(record.expense_date || record.created_at);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
       if (!map[key]) {
         map[key] = {

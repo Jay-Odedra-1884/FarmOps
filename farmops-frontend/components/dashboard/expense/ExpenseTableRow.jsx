@@ -123,7 +123,7 @@ export default function ExpenseTableRow({
 
       {/* ── Date ── */}
       <td className="px-4 py-3 text-right text-gray-400 whitespace-nowrap">
-        {fmtDate(expense.created_at)}
+        {fmtDate(expense.expense_date)}
       </td>
 
       {/* ── Actions ── */}

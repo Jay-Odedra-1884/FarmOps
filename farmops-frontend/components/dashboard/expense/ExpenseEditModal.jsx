@@ -202,6 +202,21 @@ export default function ExpenseEditModal({
             )}
           </div>
 
+          {/* ── Date ── */}
+          <div>
+            <label className="block text-xs font-medium text-gray-600 mb-1">
+              Date
+            </label>
+            <input
+              type="date"
+              value={editForm.expense_date || ""}
+              onChange={(e) =>
+                setEditForm((f) => ({ ...f, expense_date: e.target.value }))
+              }
+              className={`w-full border rounded-lg px-3 py-2 text-sm focus:ring-2 focus:outline-none ${ringClass}`}
+            />
+          </div>
+
           {/* ── Save button ── */}
           <button
             onClick={onSave}

@@ -156,7 +156,7 @@ export default function ExpenseMobileCard({
       )}
 
       {/* ── Date ── */}
-      <p className="text-xs text-gray-300">{fmtDate(expense.created_at)}</p>
+      <p className="text-xs text-gray-300">{fmtDate(expense.expense_date)}</p>
     </div>
   );
 }

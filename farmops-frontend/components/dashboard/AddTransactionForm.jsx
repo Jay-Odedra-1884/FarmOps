@@ -11,12 +11,12 @@ import {
 } from "@/services/expenseApi";
 import { Spinner } from "@/components/ui/spinner";
 import { PlusIcon, XIcon } from "lucide-react";
+import { Calendar } from "../ui/calendar";
 
 function AddTransactionForm() {
   const {
     authToken,
     notifyExpenseChange,
-    notifyFarmChange,
     farmVersion,
     categoryVersion,
     notifyCategoryChange,
@@ -46,6 +46,7 @@ function AddTransactionForm() {
   const [amount, setAmount] = useState("");
   const [note, setNote] = useState("");
   const [errors, setErrors] = useState({});
+  const [date, setDate] = useState(new Date());
 
   // ─── Fetch Farms (watches farmVersion) ───────────────────────────────────
   // Re-runs only when farms change (add farm, delete farm, add/delete crop).
@@ -136,6 +137,7 @@ function AddTransactionForm() {
       farm_id: parseInt(selectedFarmId),
       crop_id: parseInt(selectedCropId),
       category_id: parseInt(selectedCategoryId),
+      expense_date: date.toLocaleDateString("en-CA"), // "YYYY-MM-DD" in local timezone
     });
     if (res?.success) {
       setAmount("");
@@ -386,7 +388,21 @@ function AddTransactionForm() {
             <p className="text-red-500 text-xs mt-0.5">{errors.crop_id}</p>
           )}
         </div>
-
+        {/* Date */}
+        <label className="block text-xs font-medium text-gray-600 mb-1">
+          Date
+        </label>
+        {/* <div className="border px-4 py-2 rounded-lg">{date.toDateString()}</div> */}
+        <div>
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            disabled={(date) => date > new Date()}
+            className="rounded-lg border w-full"
+            captionLayout="dropdown"
+          />
+        </div>
         {/* ── Submit Button ──
                     - Color changes based on type: red for Expense, green for Income
                     - Shows "Saving..." while the API call is in progress

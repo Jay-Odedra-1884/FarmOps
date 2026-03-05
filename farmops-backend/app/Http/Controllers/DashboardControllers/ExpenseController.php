@@ -36,18 +36,15 @@ class ExpenseController extends Controller
             $query->where('type', $request->type);
         }
 
-        if ($request->filled('start_date')) {
-            $query->where('date', '>=', $request->start_date);
+        if ($request->filled('expense_date')) {
+            $query->where('expense_date', $request->expense_date);
         }
 
-        if ($request->filled('end_date')) {
-            $query->where('date', '<=', $request->end_date);
-        }
 
         $expenses = $query
             ->where('user_id', auth()->user()->id)
             ->with(['farm:id,name', 'crop:id,name', 'category:id,name'])
-            ->latest()
+            ->latest('expense_date')
             ->paginate(10);
 
         return response()->json([
@@ -70,16 +67,16 @@ class ExpenseController extends Controller
         }
 
         if ($request->filled('start_date')) {
-            $query->where('date', '>=', $request->start_date);
+            $query->where('expense_date', '>=', $request->start_date);
         }
 
         if ($request->filled('end_date')) {
-            $query->where('date', '<=', $request->end_date);
+            $query->where('expense_date', '<=', $request->end_date);
         }
 
         $expenses = $query
             ->with(['farm:id,name', 'crop:id,name', 'category:id,name'])
-            ->latest()
+            ->latest('expense_date')
             ->paginate(10);
 
         return response()->json([
@@ -99,6 +96,7 @@ class ExpenseController extends Controller
             'category_id' => 'required|exists:expenses_categories,id',
             'crop_id' => 'required|exists:crops,id',
             'farm_id' => 'required|exists:farms,id',
+            'expense_date' => 'date|before_or_equal:today',
         ]);
 
         if ($validator->fails()) {
@@ -117,6 +115,7 @@ class ExpenseController extends Controller
             'category_id' => $data['category_id'],
             'crop_id' => $data['crop_id'],
             'farm_id' => $data['farm_id'],
+            'expense_date' => $data['expense_date'],
             'user_id' => auth()->user()->id,
         ]);
 
@@ -137,6 +136,7 @@ class ExpenseController extends Controller
             'category_id' => 'nullable|exists:expenses_categories,id',
             'crop_id' => 'nullable|exists:crops,id',
             'farm_id' => 'nullable|exists:farms,id',
+            'expense_date' => 'date|before_or_equal:today',
         ]);
 
         if ($validator->fails()) {

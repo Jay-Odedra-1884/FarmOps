@@ -14,6 +14,7 @@ class Expense extends Model
         "crop_id",
         "farm_id",
         "user_id",
+        "expense_date",
     ];
 
     public function category()
