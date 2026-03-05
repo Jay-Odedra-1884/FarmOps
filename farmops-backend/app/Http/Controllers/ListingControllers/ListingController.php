@@ -1,12 +1,13 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\ListingControllers;
 
 use App\Jobs\ImportCsvJob;
 use App\Models\Listing;
 use Exception;
 
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Storage;
 
 class ListingController extends Controller

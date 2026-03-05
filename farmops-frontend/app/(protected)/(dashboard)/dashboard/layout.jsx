@@ -6,7 +6,7 @@ function DashboardLayout({ children }) {
     <div className="h-full w-full grid grid-cols-12">
       {/* Mobile menu toggle placeholder */}
       <div className="md:hidden block absolute left-2 bg-green-500 p-2 rounded-lg mt-5">
-        |||
+      
       </div>
 
       {/* Add Transaction sidebar — visible on md+ */}

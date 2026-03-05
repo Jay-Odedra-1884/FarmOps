@@ -18,7 +18,7 @@ export default function Layout({ children }) {
     if (authLoading) return null;
 
     return (
-        <div className="h-screen w-screen">
+        <div className="h-screen w-screen overflow-hidden">
             {children}
             <div className="h-20"></div>
         </div>

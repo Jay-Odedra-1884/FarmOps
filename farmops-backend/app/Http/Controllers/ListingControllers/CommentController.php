@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\ListingControllers;
 
 use App\Events\CommentCreated;
 use App\Models\Comment;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class CommentController extends Controller
 {

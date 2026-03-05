@@ -1,16 +1,17 @@
 <?php
 
-use App\Http\Controllers\AuthController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\CommentController;
-use App\Http\Controllers\CropController;
-use App\Http\Controllers\ExpenseController;
-use App\Http\Controllers\ListingController;
-use App\Http\Controllers\LikeController;
-use App\Http\Controllers\MailController;
-use App\Http\Controllers\ExpensesCategoryController;
-use App\Http\Controllers\FarmController;
-use App\Http\Controllers\StatsController;
+use App\Http\Controllers\AuthControllers\AuthController;
+
+use App\Http\Controllers\DashboardControllers\CropController;
+use App\Http\Controllers\DashboardControllers\ExpenseController;
+use App\Http\Controllers\DashboardControllers\ExpensesCategoryController;
+use App\Http\Controllers\DashboardControllers\FarmController;
+use App\Http\Controllers\DashboardControllers\StatsController;
+use App\Http\Controllers\HelperControllers\MailController;
+use App\Http\Controllers\ListingControllers\CategoryController;
+use App\Http\Controllers\ListingControllers\CommentController;
+use App\Http\Controllers\ListingControllers\LikeController;
+use App\Http\Controllers\ListingControllers\ListingController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -23,6 +24,8 @@ Route::post('logout', [AuthController::class, 'logout']);
 Route::group([
     "middleware" => "auth:sanctum"
 ], function () {
+
+    //Listing/blog routes-------------------------------------------
     //for category in blog page
     Route::resource('categories', CategoryController::class);
 
@@ -39,7 +42,7 @@ Route::group([
     //likes
     Route::post('likes', [LikeController::class, 'toggle']);
 
-    //expenses
+    //dashboard routes--------------------------------------------------
 
     //expenses category
     Route::resource('expenses-categories', ExpensesCategoryController::class);
@@ -50,7 +53,6 @@ Route::group([
     //expenses
     Route::resource('expenses', ExpenseController::class);
     Route::get('all-expenses', [ExpenseController::class, 'getAllExpenses']);
-
 
     //to get the stats
     Route::get('user-stats', [StatsController::class, 'getUserStats']);

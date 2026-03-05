@@ -2,10 +2,11 @@
 
 import { MyHook } from "@/context/AppProvider";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 
 function NavBar() {
   const { authToken, logout } = MyHook();
+  const [mobileView, setMobileView] = useState(true);
   const router = useRouter();
 
   const handleLogout = () => {
@@ -15,7 +16,61 @@ function NavBar() {
   return (
     <div className="bg-transparent text-black xl:px-5 w-full flex justify-between items-center scale-80 md:scale-100">
       <div className="text-3xl py-4">FarmOps</div>
-      <div className="flex gap-5 items-center font-bold bg-black text-white px-4 py-2 rounded-lg">
+      <div className="md:hidden block z-10">
+        <div 
+        onClick={() => setMobileView(!mobileView)}
+        className="flex gap-5 items-center font-bold bg-black text-white px-4 py-2 rounded-lg">
+          Menu
+        </div>
+        {mobileView && 
+        <div className="absolute right-0 flex-col gap-5 items-center mt-1 text-xl font-bold bg-black text-white px-4 py-2 rounded-lg">
+          <div
+            onClick={() => router.push("/")}
+            className="cursor-pointer hover:scale-110"
+          >
+            Home
+          </div>
+          {authToken && (
+            <>
+              <div
+                onClick={() => router.push("/listings")}
+                className="cursor-pointer hover:scale-110"
+              >
+                Read
+              </div>
+              <div
+                onClick={() => router.push("/my-space")}
+                className="cursor-pointer hover:scale-110"
+              >
+                My Space
+              </div>
+              <div
+                onClick={() => router.push("/dashboard")}
+                className="cursor-pointer text-green-500 hover:scale-110"
+              >
+                Dashboard
+              </div>
+            </>
+          )}
+          {authToken ? (
+            <div
+              className="cursor-pointer hover:scale-110"
+              onClick={handleLogout}
+            >
+              Logout
+            </div>
+          ) : (
+            <div
+              onClick={() => router.push("/auth")}
+              className="cursor-pointer hover:scale-110"
+            >
+              Login
+            </div>
+          )}
+        </div>
+        }
+      </div>
+      <div className="hidden md:flex gap-5 items-center font-bold bg-black text-white px-4 py-2 rounded-lg">
         <div
           onClick={() => router.push("/")}
           className="cursor-pointer hover:scale-110"
