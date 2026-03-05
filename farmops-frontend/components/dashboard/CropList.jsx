@@ -22,6 +22,7 @@ function CropList({ farmId, onDataChange }) {
   const [editingCropId, setEditingCropId] = useState(null);
   const [editingCropName, setEditingCropName] = useState("");
   const [deletingCropId, setDeletingCropId] = useState(null);
+  const [confirmDeleteCropId, setConfirmDeleteCropId] = useState(null);
   const [cropErrors, setCropErrors] = useState({});
 
   useEffect(() => {
@@ -89,6 +90,7 @@ function CropList({ farmId, onDataChange }) {
 
   const handleDeleteCrop = async (cropId) => {
     setDeletingCropId(cropId);
+    setConfirmDeleteCropId(null);
     const res = await deleteCrop(authToken, cropId);
     if (res?.success) {
       setCrops((prev) => prev.filter((c) => c.id !== cropId));
@@ -190,27 +192,65 @@ function CropList({ farmId, onDataChange }) {
                       </button>
                     </>
                   ) : (
-                    <>
+                    <div className="flex gap-2 bg-white px-2 py-1 rounded-lg border">
                       <button
-                        onClick={() => handleStartEditCrop(crop)}
-                        className="p-1.5 rounded-lg bg-green-50 text-green-700 hover:bg-green-100 border border-green-200 transition"
+                        onClick={() => {
+                          setConfirmDeleteCropId(null);
+                          handleStartEditCrop(crop);
+                        }}
+                        className="p-1.5 rounded-lg text-green-700 hover:bg-green-100 transition"
                         title="Edit crop"
                       >
                         <Edit2Icon className="size-3.5" />
                       </button>
-                      <button
-                        onClick={() => handleDeleteCrop(crop.id)}
-                        disabled={deletingCropId === crop.id}
-                        className="p-1.5 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 border border-red-200 transition disabled:opacity-40"
-                        title="Delete crop"
-                      >
-                        {deletingCropId === crop.id ? (
-                          <Spinner className="size-3.5" />
-                        ) : (
-                          <Trash2Icon className="size-3.5" />
+
+                      {/* Delete btn + inline confirmation popup */}
+                      <div className="relative">
+                        <button
+                          onClick={() =>
+                            confirmDeleteCropId === crop.id
+                              ? setConfirmDeleteCropId(null)
+                              : setConfirmDeleteCropId(crop.id)
+                          }
+                          disabled={deletingCropId === crop.id}
+                          className="p-1.5 rounded-lg text-red-500 hover:bg-red-100 transition disabled:opacity-40"
+                          title="Delete crop"
+                        >
+                          {deletingCropId === crop.id ? (
+                            <Spinner className="size-3.5" />
+                          ) : (
+                            <Trash2Icon className="size-3.5" />
+                          )}
+                        </button>
+
+                        {confirmDeleteCropId === crop.id && (
+                          <div className="absolute right-0 top-full mt-2 w-60 bg-white rounded-xl shadow-xl border border-gray-100 p-4 z-50 animate-in fade-in zoom-in-95 duration-150">
+                            <p className="text-sm  mb-3">
+                              Are you sure you want to delete &ldquo;{crop.name}&rdquo;? 
+                              All related expenses will also be deleted
+                              And this action cannot be undone.
+                            </p>
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => setConfirmDeleteCropId(null)}
+                                className="flex-1 bg-gray-100 text-gray-700 py-1.5 rounded-lg text-xs hover:bg-gray-200 transition"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => handleDeleteCrop(crop.id)}
+                                disabled={deletingCropId === crop.id}
+                                className="flex-1 bg-red-600 text-white py-1.5 rounded-lg text-xs hover:bg-red-700 transition disabled:bg-red-400"
+                              >
+                                {deletingCropId === crop.id
+                                  ? "Deleting..."
+                                  : "Delete"}
+                              </button>
+                            </div>
+                          </div>
                         )}
-                      </button>
-                    </>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
