@@ -13,7 +13,7 @@ class CropController extends Controller
 
     public function index(Request $request)
     {
-        $crop = Crop::where('farm_id', $request->farm_id)->get();
+        $crop = Crop::where('farm_id', $request->farm_id)->orderBy('created_at', 'desc')->get();
         return response()->json([
             'success' => true,
             'message' => 'Crop retrieved successfully',

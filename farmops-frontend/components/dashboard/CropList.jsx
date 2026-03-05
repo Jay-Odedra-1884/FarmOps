@@ -51,7 +51,7 @@ function CropList({ farmId, onDataChange }) {
         farm_id: farmId,
       });
       if (res?.success) {
-        setCrops((prev) => [...prev, res.data]);
+        setCrops((prev) => [res.data, ...prev]);
         setAddCropName("");
         notifyFarmChange(); // new crop → AddTransactionForm crop dropdown re-fetches
       }

@@ -8,6 +8,9 @@ import {
   ReceiptIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  XIcon,
+  CalendarIcon,
+  TagIcon,
 } from "lucide-react";
 import { MyHook } from "@/context/AppProvider";
 import {
@@ -56,8 +59,7 @@ function ExpenseList({
   const [filter, setFilter] = useState({
     type: "",
     category_id: "",
-    start_date: "",
-    end_date: "",
+    expense_date: "",
   });
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -255,25 +257,27 @@ function ExpenseList({
   // ── Render ─────────────────────────────────────────────────────────────
   return (
     <div className="w-full bg-white shadow rounded-2xl p-5 md:p-6 flex flex-col gap-4">
-      {/* ── Header: title + pagination + type filter ── */}
+      {/* ── Row 1: title + pagination + type tabs ── */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 shrink-0">
         <h2 className="text-xl font-semibold text-gray-800">{title}</h2>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {/* Pagination */}
           <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer hover:text-green-600"
+              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer hover:text-green-600 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ChevronLeftIcon className="size-5" />
             </button>
-            <span>{currentPage}</span>
+            <span className="text-sm font-medium text-gray-700 px-1">
+              {currentPage}
+            </span>
             <button
               onClick={() => setCurrentPage((p) => p + 1)}
               disabled={currentPage >= lastPage}
-              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer hover:text-green-600"
+              className="px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-150 cursor-pointer hover:text-green-600 disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <ChevronRightIcon className="size-5" />
             </button>
@@ -303,8 +307,65 @@ function ExpenseList({
               </button>
             ))}
           </div>
+      {/* ── Date filter + Category filter ── */}
+      <div className="flex flex-wrap items-center gap-2">
+        {/* Date filter  */}
+        <div
+          className={`flex items-center gap-2 bg-gray-100 rounded-lg px-3 py-2 transition-all ${
+            filter.expense_date ? "ring-2 ring-green-400/50" : ""
+          }`}
+        >
+          <CalendarIcon className="size-4 text-gray-400 shrink-0" />
+          <input
+            type="date"
+            value={filter.expense_date}
+            onChange={(e) => handleFilterChange("expense_date", e.target.value)}
+            className="bg-transparent outline-none text-sm text-gray-700 w-[130px] cursor-pointer"
+          />
+          {filter.expense_date && (
+            <button
+              onClick={() => handleFilterChange("expense_date", "")}
+              className="text-gray-400 hover:text-red-500 transition"
+              title="Clear date filter"
+            >
+              <XIcon className="size-3.5" />
+            </button>
+          )}
+        </div>
+
+        {/* Category filter */}
+        <div
+          className={`flex items-center gap-2 bg-gray-100 rounded-xl px-3 py-2 transition-all ${
+            filter.category_id ? "ring-2 ring-green-400/50" : ""
+          }`}
+        >
+          <TagIcon className="size-4 text-gray-400 shrink-0" />
+          <select
+            value={filter.category_id}
+            onChange={(e) => handleFilterChange("category_id", e.target.value)}
+            className="bg-transparent outline-none text-sm text-gray-700 cursor-pointer max-w-[160px]"
+          >
+            <option value="">All Categories</option>
+            {categories.map((cat) => (
+              <option key={cat.id} value={cat.id}>
+                {cat.name}
+              </option>
+            ))}
+          </select>
+          {filter.category_id && (
+            <button
+              onClick={() => handleFilterChange("category_id", "")}
+              className="text-gray-400 hover:text-red-500 transition"
+              title="Clear category filter"
+            >
+              <XIcon className="size-3.5" />
+            </button>
+          )}
         </div>
       </div>
+        </div>
+      </div>
+
 
       {/* ── Summary pills ── */}
       {!loading && expenses.length > 0 && (
