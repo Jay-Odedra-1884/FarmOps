@@ -29,8 +29,14 @@ function Page() {
     //handle login
     const validateLogin = () => {
         let newErrors = {};
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+            newErrors.email = 'Email is invalid';
+        }
         if(!email){
             newErrors.email = 'Email is required';
+        }
+        if(password.length < 6 || password.length > 20){
+            newErrors.password = 'Password must be at least 6 to 20 characters long';
         }
         if(!password){
             newErrors.password = 'Password is required';
@@ -58,14 +64,17 @@ function Page() {
     //handle register
     const validateRegister = () => {
         let newErrors = {};
-        if(!name){
-            newErrors.name = 'Name is required';
-        }
         if(/^[0-9]+$/.test(name)){
             newErrors.name = 'Name must not be a number';
         }
         if(name.length < 3 || name.length > 20){
             newErrors.name = 'Name must be at least 3 to 20 characters long';
+        }
+        if(!name){
+            newErrors.name = 'Name is required';
+        }
+        if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+            newErrors.email = 'Email is invalid';
         }
         if(!email){
             newErrors.email = 'Email is required';
@@ -76,20 +85,20 @@ function Page() {
         if(mobile.length !== 10){
             newErrors.mobile = 'Mobile must be 10 digits';
         }
-        if(!password){
-            newErrors.password = 'Password is required';
-        }
         if(password.length < 6 || password.length > 20){
             newErrors.password = 'Password must be at least 6 to 20 characters long';
         }
-        if(!confirmPassword){
-            newErrors.confirmPassword = 'Confirm Password is required';
+        if(!password){
+            newErrors.password = 'Password is required';
         }
         if(confirmPassword.length < 6 || confirmPassword.length > 20){
             newErrors.confirmPassword = 'Confirm Password must be at least 6 to 20 characters long';
         }
         if(confirmPassword !== password){
             newErrors.confirmPassword = 'Confirm Password does not match';
+        }
+        if(!confirmPassword){
+            newErrors.confirmPassword = 'Confirm Password is required';
         }
         setError(newErrors);
         return Object.keys(newErrors).length === 0;
@@ -125,7 +134,7 @@ function Page() {
                         <input
                             className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Email'
-                            type="email"
+                            type="text"
                             name='email'
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
@@ -171,7 +180,7 @@ function Page() {
                         <input
                             className='w-full bg-gray-100 rounded-xl px-5 py-4 text-base outline-none border-none focus:ring-2 focus:ring-black focus:bg-white transition-all placeholder-gray-400 text-gray-800'
                             placeholder='Email'
-                            type="email"
+                            type="text"
                             name='email'
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
