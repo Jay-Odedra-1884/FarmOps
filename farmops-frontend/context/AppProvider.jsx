@@ -15,7 +15,6 @@ const getErrorMessage = (message) => {
     return message;
   }
   if (typeof message === "object" && message !== null) {
-    // Convert validation error object to string
     const errors = [];
     for (const key in message) {
       if (Array.isArray(message[key])) {
@@ -33,10 +32,10 @@ export const AppProvider = ({ children }) => {
   const router = useRouter();
 
   const [authToken, setAuthToken] = useState(null);
+  const [authUser, setAuthUser] = useState(null);
   const [authLoading, setAuthLoading] = useState(true);
 
   // ── Targeted refresh signals ─────────────────────────────────────────────
-  // Split into three so components only re-fetch when THEIR data changes.
   const [expenseVersion, setExpenseVersion] = useState(0);
   const [farmVersion, setFarmVersion] = useState(0);
   const [categoryVersion, setCategoryVersion] = useState(0);
@@ -46,9 +45,17 @@ export const AppProvider = ({ children }) => {
   const notifyCategoryChange = () => setCategoryVersion((v) => v + 1);
 
   useEffect(() => {
-    let token = Cookies.get("authToken");
+    const token = Cookies.get("authToken");
+    const storedUser = localStorage.getItem("authUser");
     if (token) {
       setAuthToken(token);
+    }
+    if (storedUser) {
+      try {
+        setAuthUser(JSON.parse(storedUser));
+      } catch (_) {
+        localStorage.removeItem("authUser");
+      }
     }
     setAuthLoading(false);
   }, []);
@@ -70,7 +77,18 @@ export const AppProvider = ({ children }) => {
         Cookies.set("authToken", data.token);
         setAuthToken(data.token);
 
-        router.push("/dashboard");
+        // Persist user data (including role) for auth guards and role-based UI
+        if (data.data) {
+          setAuthUser(data.data);
+          localStorage.setItem("authUser", JSON.stringify(data.data));
+        }
+
+        // Redirect based on role
+        if (data.data?.role === "admin") {
+          router.push("/admin-dashboard");
+        } else {
+          router.push("/dashboard");
+        }
         toast.success("User Login !");
       } else {
         toast.error(getErrorMessage(data.message));
@@ -129,7 +147,9 @@ export const AppProvider = ({ children }) => {
       const data = await res.json();
       if (data.success) {
         setAuthToken(null);
+        setAuthUser(null);
         Cookies.remove("authToken");
+        localStorage.removeItem("authUser");
         toast.success(data.message);
       } else {
         toast.error(getErrorMessage(data.message));
@@ -213,6 +233,7 @@ export const AppProvider = ({ children }) => {
         register,
         logout,
         authToken,
+        authUser,
         authLoading,
         forgotPassword,
         resetPassword,

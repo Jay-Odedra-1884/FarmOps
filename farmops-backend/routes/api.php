@@ -60,6 +60,17 @@ Route::group([
 
 });
 
+// Admin routes — requires auth:sanctum AND admin role
+Route::group([
+    'middleware' => ['auth:sanctum', 'admin'],
+], function () {
+    Route::get('admin/users', [\App\Http\Controllers\AdminControllers\AdminController::class, 'getUsers']);
+    Route::get('admin/users/{id}', [\App\Http\Controllers\AdminControllers\AdminController::class, 'getUser']);
+    Route::patch('admin/users/{id}/suspend', [\App\Http\Controllers\AdminControllers\AdminController::class, 'suspendUser']);
+    Route::delete('admin/users/{id}', [\App\Http\Controllers\AdminControllers\AdminController::class, 'deleteUser']);
+    Route::get('admin/stats', [\App\Http\Controllers\AdminControllers\AdminController::class, 'platformStats']);
+});
+
 //to send mail
 Route::post('send-mail', [MailController::class, 'sendMail']);
 

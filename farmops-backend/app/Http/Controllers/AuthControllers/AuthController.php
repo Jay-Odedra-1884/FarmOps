@@ -10,6 +10,7 @@ use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
 use App\Jobs\SendWelcomeMailJob;
 
 class AuthController extends Controller
@@ -107,6 +108,7 @@ class AuthController extends Controller
         Mail::to($user->email)->send(new ResetPasswordMail($user, $url));
 
         return response()->json([
+            'success' => true,
             'message' => 'Reset link sent to your email'
         ]);
 
@@ -133,8 +135,8 @@ class AuthController extends Controller
         );
 
         return $status === Password::PASSWORD_RESET
-            ? response()->json(['message' => 'Password reset successful'])
-            : response()->json(['message' => __($status)], 400);
+            ? response()->json(['success' => true, 'message' => 'Password reset successful'])
+            : response()->json(['success' => false, 'message' => __($status)], 400);
     }
 
 }

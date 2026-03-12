@@ -28,6 +28,8 @@ class User extends Authenticatable
         'email',
         'mobile',
         'password',
+        'role',
+        'is_suspended',
     ];
 
     /**
@@ -53,19 +55,31 @@ class User extends Authenticatable
         ];
     }
 
-    public function likes() {
+    /**
+     * Check if the user has admin role.
+     */
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function likes()
+    {
         return $this->hasMany(Like::class);
     }
 
-    public function comments() {
+    public function comments()
+    {
         return $this->hasMany(Comment::class);
     }
 
-    public function farms() {
+    public function farms()
+    {
         return $this->hasMany(Farm::class);
     }
 
-    public function expense() {
+    public function expense()
+    {
         return $this->hasMany(Expense::class);
     }
 }

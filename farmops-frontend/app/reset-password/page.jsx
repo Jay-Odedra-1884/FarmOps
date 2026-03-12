@@ -1,14 +1,16 @@
 "use client";
-import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import React, { Suspense, useState } from "react";
 import toast from "react-hot-toast";
 
-function ResetPasswordPage({searchParams}) {
+// Inner component that reads search params (must be wrapped in Suspense)
+function ResetPasswordForm() {
   const router = useRouter();
   const API_URL = process.env.NEXT_PUBLIC_API_URL;
+  const searchParams = useSearchParams();
 
-  const token = searchParams.token;
-  const email = searchParams.email;
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -163,4 +165,17 @@ function ResetPasswordPage({searchParams}) {
   );
 }
 
-export default ResetPasswordPage;
+// Next.js 15: useSearchParams() must be wrapped in <Suspense>
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-2 border-blue-500 border-t-transparent" />
+        </div>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
+  );
+}

@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 import React, { useState } from "react";
 
 function NavBar() {
-  const { authToken, logout } = MyHook();
+  const { authToken, authUser, logout } = MyHook();
   const [mobileView, setMobileView] = useState(true);
   const router = useRouter();
+
+  const isAdmin = authUser?.role === "admin";
 
   const handleLogout = () => {
     logout();
@@ -51,6 +53,14 @@ function NavBar() {
                 >
                   Dashboard
                 </div>
+                {isAdmin && (
+                  <div
+                    onClick={() => router.push("/admin-dashboard")}
+                    className="cursor-pointer text-yellow-400 hover:scale-110"
+                  >
+                    Admin Panel
+                  </div>
+                )}
               </>
             )}
             {authToken ? (
@@ -98,6 +108,14 @@ function NavBar() {
             >
               Dashboard
             </div>
+            {isAdmin && (
+              <div
+                onClick={() => router.push("/admin-dashboard")}
+                className="cursor-pointer text-yellow-400 hover:scale-110"
+              >
+                Admin Panel
+              </div>
+            )}
           </>
         )}
         {authToken ? (
